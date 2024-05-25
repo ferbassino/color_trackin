@@ -26,8 +26,15 @@
         choose the colors you want to detect through the controls on the right
       </p>
     </div>
-
     <div class="demo-frame">
+      <div class="description-container">
+        <div class="distancia-container">
+          <span>Distancia desde arriba [m]: </span><span id="distancia"></span>
+        </div>
+        <div class="velocidad-container">
+          <span>Velocidad [m/s]: </span><span id="velocidad"></span>
+        </div>
+      </div>
       <div class="demo-container">
         <video
           id="video"
@@ -41,7 +48,8 @@
         ></video>
         <canvas id="canvas" width="600" height="450"></canvas>
       </div>
-      <span>Angulo de codo </span><span id="codo"> </span><span> °</span>
+
+      ><span id="velocidad"> </span>
     </div>
 
     <script src="script.js" type="text/javascript"></script>
