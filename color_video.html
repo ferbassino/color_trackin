@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>tracking.js - color with video</title>
+    <link rel="stylesheet" href="styles2.css" />
+
+    <script src="../build/tracking-min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
+    <script src="assets/stats.min.js"></script>
+    <script src="assets/color_camera_gui.js"></script>
+
+    <style>
+      .demo-container {
+        background-color: black;
+      }
+
+      video,
+      canvas {
+        position: absolute;
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="menu">
+        <a href="#">Tracking</a>
+        <a href="/color_video.html">Cargar video</a>
+        <a href="/tracking.html">Tiempo real</a>
+        <!-- <a href="#">Servicios</a>
+        <a href="#">Contacto</a> -->
+      </div>
+    </nav>
+    <div class="demo-title">
+      <!-- <p>
+        <a href="http://trackingjs.com" target="_parent">tracking.js</a> －
+        detect certain colors in a video
+      </p>
+    </div> -->
+    <h2>Cargar Video</h2>
+    <input type="file" id="fileInput" accept="video/*" />
+    <button id="loadButton"></button>
+
+    <div class="demo-frame">
+      <div class="demo-container">
+        <div id="rectangle"></div>
+        <video
+          id="videoPlayer"
+          width="298"
+          height="530"
+          preload
+          autoplay
+          loop
+          muted
+          controls
+        >
+          <source id="videoSource" type="video/mp4" />
+          <!-- <source src="assets/minions.ogv" type="video/ogg" /> -->
+        </video>
+        <canvas id="canvas" width="800" height="500"></canvas>
+      </div>
+    </div>
+
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const fileInput = document.getElementById("fileInput");
+        const loadButton = document.getElementById("loadButton");
+        const videoSource = document.getElementById("videoSource");
+
+        // Evento de clic en el botón para cargar el video
+        loadButton.addEventListener("click", function () {
+          fileInput.click(); // Simular clic en el input de tipo file
+        });
+
+        // Evento de cambio en el input de tipo file
+        fileInput.addEventListener("change", function () {
+          const file = this.files[0];
+          if (file) {
+            cargarVideo(file);
+          }
+        });
+
+        // Función para cargar el video y establecer la URL en la etiqueta source
+        function cargarVideo(file) {
+          const reader = new FileReader();
+          reader.onload = function (event) {
+            // Generar la URL del archivo cargado
+            const videoURL = event.target.result;
+
+            // Establecer la URL en el atributo src de la etiqueta source
+            videoSource.src = videoURL;
+
+            // Opcionalmente, cargar automáticamente el video
+            const videoPlayer = document.getElementById("videoPlayer");
+            videoPlayer.load();
+          };
+          // Leer el contenido del archivo como una URL de datos (data URL)
+          reader.readAsDataURL(file);
+
+          var canvas = document.getElementById("canvas");
+          var context = canvas.getContext("2d");
+
+          tracking.ColorTracker.registerColor("purple", function (r, g, b) {
+            var dx = r - 168;
+            var dy = g - 60;
+            var dz = b - 210;
+
+            if (b - g >= 100 && r - g >= 60) {
+              return true;
+            }
+            return dx * dx + dy * dy + dz * dz < 3500;
+          });
+          // red
+          tracking.ColorTracker.registerColor("red", function (r, g, b) {
+            if (r > 200 && g < 50 && b < 50) {
+              return true;
+            }
+            return false;
+          });
+          // blue
+          tracking.ColorTracker.registerColor("blue", function (r, g, b) {
+            if (r < 50 && g < 50 && b > 100) {
+              return true;
+            }
+            return false;
+          });
+          // green;
+          tracking.ColorTracker.registerColor("green", function (r, g, b) {
+            if (r < 50 && g > 200 && b < 50) {
+              return true;
+            }
+            return false;
+          });
+
+          var tracker = new tracking.ColorTracker([
+            "cyan",
+            "magenta",
+            "yellow",
+            "purple",
+            "red",
+            "blue",
+            "green",
+          ]);
+          tracker.setMinDimension(5);
+
+          tracking.track("#videoPlayer", tracker);
+
+          tracker.on("track", function (event) {
+            context.clearRect(0, 0, canvas.width, canvas.height);
+
+            event.data.forEach(function (rect) {
+              if (rect.color === "custom") {
+                rect.color = tracker.customColor;
+              }
+
+              context.strokeStyle = rect.color;
+              context.strokeRect(rect.x, rect.y, rect.width, rect.height);
+              context.font = "11px Helvetica";
+              context.fillStyle = "#fff";
+              context.fillText(
+                "x: " + rect.x + "px",
+                rect.x + rect.width + 5,
+                rect.y + 11
+              );
+              context.fillText(
+                "y: " + rect.y + "px",
+                rect.x + rect.width + 5,
+                rect.y + 22
+              );
+              context.fillText(
+                "color: " + rect.color,
+                rect.x + rect.width + 5,
+                rect.y + 36
+              );
+            });
+          });
+
+          initGUIControllers(tracker);
+        }
+      });
+      // window.onload = function () {};
+    </script>
+  </body>
+</html>
