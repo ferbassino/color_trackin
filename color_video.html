@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <title>tracking.js - color with video</title>
-    <link rel="stylesheet" href="styles2.css" />
+    <link rel="stylesheet" href="styles.css" />
 
     <script src="../build/tracking-min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dat-gui/0.7.9/dat.gui.min.js"></script>
@@ -24,19 +24,18 @@
   <body>
     <nav class="navbar">
       <div class="menu">
-        <a href="#">Tracking</a>
+        <a href="/index.html">Home</a>
         <a href="/color_video.html">Cargar video</a>
         <a href="/tracking.html">Tiempo real</a>
-        <!-- <a href="#">Servicios</a>
-        <a href="#">Contacto</a> -->
+        <a href="/gota.html">gota</a>
       </div>
     </nav>
     <div class="demo-title">
-      <!-- <p>
+      <p>
         <a href="http://trackingjs.com" target="_parent">tracking.js</a> －
         detect certain colors in a video
       </p>
-    </div> -->
+    </div>
     <h2>Cargar Video</h2>
     <input type="file" id="fileInput" accept="video/*" />
     <button id="loadButton"></button>
@@ -44,24 +43,75 @@
     <div class="demo-frame">
       <div class="demo-container">
         <div id="rectangle"></div>
-        <video
-          id="videoPlayer"
-          width="298"
-          height="530"
-          preload
-          autoplay
-          loop
-          muted
-          controls
-        >
+        <video id="videoPlayer" preload autoplay loop muted controls>
           <source id="videoSource" type="video/mp4" />
           <!-- <source src="assets/minions.ogv" type="video/ogg" /> -->
         </video>
-        <canvas id="canvas" width="800" height="500"></canvas>
+        <canvas id="canvas" width="400" height="800"></canvas>
       </div>
     </div>
 
     <script>
+      // stats---------------------------------
+      var fps = 0;
+      var Frames = function () {
+        var l = Date.now(),
+          m = l,
+          g = 0,
+          n = Infinity,
+          o = 0,
+          p = Infinity,
+          q = 0,
+          r = 0;
+
+        return {
+          REVISION: 11,
+
+          begin: function () {
+            l = Date.now();
+          },
+          end: function () {
+            var b = Date.now();
+            g = b - l;
+            n = Math.min(n, g);
+            o = Math.max(o, g);
+            var a = Math.min(30, 30 - 30 * (g / 200));
+            r++;
+            b > m + 1e3 &&
+              ((fps = Math.round((1e3 * r) / (b - m))),
+              (p = Math.min(p, fps)),
+              (q = Math.max(q, fps)),
+              (a = Math.min(30, 30 - 30 * (frames / 100))),
+              (m = b),
+              (r = 0));
+
+            return b;
+          },
+          update: function () {
+            l = this.end();
+          },
+        };
+      };
+
+      var frames = new Frames();
+
+      frames.begin();
+
+      tracking.ColorTracker.prototype.emit = function () {
+        frames.end();
+        colorEmit_.apply(this, arguments);
+      };
+
+      // stats---------------------------------
+      var video = document.getElementById("videoPlayer");
+
+      video.addEventListener("loadedmetadata", function (event) {
+        var videoWidth = event.target.videoWidth;
+        var videoHeight = event.target.videoHeight;
+
+        localStorage.setItem("videoHeight", JSON.stringify(videoHeight));
+      });
+
       document.addEventListener("DOMContentLoaded", function () {
         const fileInput = document.getElementById("fileInput");
         const loadButton = document.getElementById("loadButton");
@@ -141,19 +191,30 @@
             "blue",
             "green",
           ]);
-          tracker.setMinDimension(5);
+          tracker.setMinDimension(1);
 
           tracking.track("#videoPlayer", tracker);
+          const array = [];
 
           tracker.on("track", function (event) {
             context.clearRect(0, 0, canvas.width, canvas.height);
-
             event.data.forEach(function (rect) {
               if (rect.color === "custom") {
                 rect.color = tracker.customColor;
               }
 
+              var videoHeight = JSON.parse(localStorage.getItem("videoHeight"));
+
+              array.push({
+                x: rect.x,
+                y: videoHeight - rect.y,
+                milliseconds: Date.now(),
+              });
+              console.log(array);
+              localStorage.setItem("array", JSON.stringify(array));
+
               context.strokeStyle = rect.color;
+
               context.strokeRect(rect.x, rect.y, rect.width, rect.height);
               context.font = "11px Helvetica";
               context.fillStyle = "#fff";
@@ -163,7 +224,7 @@
                 rect.y + 11
               );
               context.fillText(
-                "y: " + rect.y + "px",
+                "y: " + (464 - rect.y) + "px",
                 rect.x + rect.width + 5,
                 rect.y + 22
               );

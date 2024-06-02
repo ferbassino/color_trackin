@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <meta charset="UTF-8" /> -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <!-- <link rel="stylesheet" href="styles.css" /> -->
+    <!-- <title>Document</title> -->
+  </head>
+  <body>
+    <div>
+      <div class="menu">
+        <a href="/index.html">Home</a>
+        <a href="/color_video.html">Cargar video</a>
+        <a href="/tracking.html">Tiempo real</a>
+        <a href="/gota.html">gota</a>
+        <!-- <a href="#">Servicios</a>
+        <a href="#">Contacto</a> -->
+      </div>
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      var array = JSON.parse(localStorage.getItem("array"));
+      console.log(array); // Esto imprimirá el array en la consola del navegador
+
+      const data = {
+        datasets: [
+          {
+            label: "Scatter Dataset",
+            data: array,
+            backgroundColor: "rgb(255, 99, 132)",
+          },
+        ],
+      };
+      const ctx = document.getElementById("myChart");
+
+      new Chart(ctx, {
+        type: "scatter",
+        data: data,
+        options: {
+          scales: {
+            x: {
+              type: "linear",
+              position: "bottom",
+            },
+          },
+        },
+      });
+    </script>
+  </body>
+</html>
