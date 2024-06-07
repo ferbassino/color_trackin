@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <meta charset="UTF-8" /> -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <!-- <link rel="stylesheet" href="styles.css" /> -->
+    <!-- <title>Document</title> -->
+  </head>
+  <body>
+    <div>
+      <div class="menu">
+        <a href="/index.html">Home</a>
+        <a href="/white_tracker.html">Upload video</a>
+        <a href="/tracking.html">Real Time</a>
+        <a href="/white_tracker_analysis.html">Analysis</a>
+        <!-- <a href="#">Servicios</a>
+        <a href="#">Contacto</a> -->
+      </div>
+      <canvas id="myChart"></canvas>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+      var array = JSON.parse(localStorage.getItem("array"));
+      // console.log(array); // Esto imprimirá el array en la consola del navegador
+
+      const data = {
+        datasets: [
+          {
+            label: "Scatter Dataset",
+            data: array,
+            backgroundColor: "rgb(255, 99, 132)",
+          },
+        ],
+      };
+
+      // dividir en grupos de a tres
+      function splitIntoGroups(array) {
+        const groups = [];
+        let currentGroup = [];
+
+        for (let i = 0; i < array.length; i++) {
+          if (
+            currentGroup.length === 0 ||
+            Math.abs(
+              array[i].milliseconds -
+                currentGroup[currentGroup.length - 1].milliseconds
+            ) <= 20
+          ) {
+            currentGroup.push(array[i]);
+          } else {
+            groups.push(currentGroup);
+            currentGroup = [array[i]];
+          }
+        }
+
+        if (currentGroup.length > 0) {
+          groups.push(currentGroup);
+        }
+
+        return groups;
+      }
+
+      function checkGroups(groups) {
+        for (const group of groups) {
+          for (let i = 1; i < group.length; i++) {
+            if (
+              Math.abs(group[i].milliseconds - group[i - 1].milliseconds) > 50
+            ) {
+              return false;
+            }
+          }
+        }
+        return true;
+      }
+
+      let groups = splitIntoGroups(array);
+      while (!checkGroups(groups)) {
+        groups = splitIntoGroups(array);
+      }
+
+      const breaksIndexes = [];
+      const groups2 = [];
+
+      const indexArray = [];
+      for (let i = 0; i < groups.length - 1; i++) {
+        indexArray.push(i);
+
+        if (
+          groups[i + 1][1].x - groups[i][1].x > 50 ||
+          groups[i + 1][1].x - groups[i][1].x < -50
+        ) {
+          breaksIndexes.push(i);
+        }
+      }
+
+      function dividirEnGrupos(array) {
+        var indexGrupos = [];
+        for (var i = 0; i < array.length; i += 2) {
+          indexGrupos.push(array.slice(i, i + 2));
+        }
+        return indexGrupos;
+      }
+
+      var indexGrupos = dividirEnGrupos(breaksIndexes);
+      // console.log(indexGrupos);
+
+      console.log(indexGrupos);
+      groups.map((el, elIndex) => {
+        indexGrupos.map((i, iIndex) => {
+          if (elIndex > i[0] && elIndex <= i[1]) {
+            console.log(el, [el[0], el[2], el[1]]);
+          }
+        });
+      });
+      // ------------------------------------------------
+      const el = [
+        { x: 291, y: 590, milliseconds: 1717380326188 },
+        { x: 360, y: 397, milliseconds: 1717380326188 },
+        { x: 303, y: 195, milliseconds: 1717380326188 },
+      ];
+      const VerticalVector = [0, el[0].y - el[1].y];
+      const hipDopProduct = (el[0].y - el[1].y) * (el[0].y - el[1].y);
+      const VericalModule = Math.sqrt(Math.pow(Math.pow(el[0].y - el[1].y, 2)));
+
+      const musloVector = [el[0].x - el[1].x, el[0].y - el[1].y];
+      const piernaVector = [el[2].x - el[1].x, el[2].y - el[1].y];
+      const dotProduct =
+        (el[0].x - el[1].x) * (el[2].x - el[1].x) +
+        (el[0].y - el[1].y) * (el[2].y - el[1].y);
+      const musloModule = Math.sqrt(
+        Math.pow(el[0].x - el[1].x, 2) + Math.pow(el[0].y - el[1].y, 2)
+      );
+      const piernaModule = Math.sqrt(
+        Math.pow(el[1].x - el[2].x, 2) + Math.pow(el[1].y - el[2].y, 2)
+      );
+
+      // angles----------------
+      const hipAngle = [];
+      const kneeAngle = [];
+
+      groups.map((el, index) => {
+        kneeAngle.push(
+          180 -
+            (Math.acos(
+              ((el[1].x - el[0].x) * (el[2].x - el[1].x) +
+                (el[1].y - el[0].y) * (el[2].y - el[1].y)) /
+                (Math.sqrt(
+                  Math.pow(el[0].x - el[1].x, 2) +
+                    Math.pow(el[0].y - el[1].y, 2)
+                ) *
+                  Math.sqrt(
+                    Math.pow(el[1].x - el[2].x, 2) +
+                      Math.pow(el[1].y - el[2].y, 2)
+                  ))
+            ) *
+              180) /
+              Math.PI
+        );
+
+        hipAngle.push(
+          180 -
+            ((Math.asin(
+              (el[0].x - el[1].x) /
+                Math.sqrt(
+                  Math.pow(el[0].x - el[1].x, 2) +
+                    Math.pow(el[0].y - el[1].y, 2)
+                )
+            ) *
+              180) /
+              Math.PI) *
+              -1
+          // (Math.acos(
+          //   ((el[0].y - el[1].y) * (el[0].y - el[1].y)) /
+          //     (Math.sqrt(Math.pow(el[1].y - el[0].y, 2)) *
+          //       Math.sqrt(
+          //         Math.pow(el[1].x - el[0].x, 2) +
+          //           Math.pow(el[1].y - el[0].y, 2)
+          //       ))
+          // ) *
+          //   180) /
+          //   Math.PI
+        );
+        // console.log(
+        //   hipAngle[index],
+        //   kneeAngle[index],
+        //   el[0].x - el[1].x,
+        //   el[0].y - el[1].y,
+        //   index
+        // );
+      });
+
+      // const hipAngle = [];
+      // hipAnglePre.map((el) => (el >= -180 ? hipAngle.push(el) : 360 + el));
+
+      const timeArray = [];
+      let timeCount = 0;
+      for (let i = 0; i < groups.length - 1; i++) {
+        timeArray.push(
+          (timeCount +=
+            groups[i + 1][0].milliseconds - groups[i][0].milliseconds) / 1000
+        );
+      }
+
+      // ----------------------------
+      const ctx = document.getElementById("myChart");
+
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: indexArray,
+          datasets: [
+            {
+              label: "knee",
+              data: kneeAngle,
+              borderWidth: 1,
+            },
+            {
+              label: "hip",
+              data: hipAngle,
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
+      // new Chart(ctx, {
+      //   type: "scatter",
+      //   data: data,
+      //   options: {
+      //     scales: {
+      //       x: {
+      //         type: "linear",
+      //         position: "bottom",
+      //       },
+      //     },
+      //   },
+      // });
+    </script>
+  </body>
+</html>

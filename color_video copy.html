@@ -25,9 +25,9 @@
     <nav class="navbar">
       <div class="menu">
         <a href="/index.html">Home</a>
-        <a href="/color_video.html">Cargar video</a>
-        <a href="/tracking.html">Tiempo real</a>
-        <a href="/gota.html">gota</a>
+        <a href="/white_tracker.html">Upload video</a>
+        <a href="/tracking.html">Real Time</a>
+        <a href="/white_tracker_analysis.html">Analysis</a>
       </div>
     </nav>
     <div class="demo-title">
@@ -52,57 +52,6 @@
     </div>
 
     <script>
-      // stats---------------------------------
-      var fps = 0;
-      var Frames = function () {
-        var l = Date.now(),
-          m = l,
-          g = 0,
-          n = Infinity,
-          o = 0,
-          p = Infinity,
-          q = 0,
-          r = 0;
-
-        return {
-          REVISION: 11,
-
-          begin: function () {
-            l = Date.now();
-          },
-          end: function () {
-            var b = Date.now();
-            g = b - l;
-            n = Math.min(n, g);
-            o = Math.max(o, g);
-            var a = Math.min(30, 30 - 30 * (g / 200));
-            r++;
-            b > m + 1e3 &&
-              ((fps = Math.round((1e3 * r) / (b - m))),
-              (p = Math.min(p, fps)),
-              (q = Math.max(q, fps)),
-              (a = Math.min(30, 30 - 30 * (frames / 100))),
-              (m = b),
-              (r = 0));
-
-            return b;
-          },
-          update: function () {
-            l = this.end();
-          },
-        };
-      };
-
-      var frames = new Frames();
-
-      frames.begin();
-
-      tracking.ColorTracker.prototype.emit = function () {
-        frames.end();
-        colorEmit_.apply(this, arguments);
-      };
-
-      // stats---------------------------------
       var video = document.getElementById("videoPlayer");
 
       video.addEventListener("loadedmetadata", function (event) {
