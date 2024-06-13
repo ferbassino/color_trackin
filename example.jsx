@@ -54,3 +54,39 @@ const example = [
   { x: 351, y: 389, milliseconds: 1717377577006 },
   { x: 272, y: 197, milliseconds: 1717377577006 },
 ];
+
+const groups = [
+  [
+    { x: 297, y: 621, milliseconds: 1717788286801 },
+    { x: 380, y: 429, milliseconds: 1717788286803 },
+    { x: 326, y: 215, milliseconds: 1717788286803 },
+  ],
+  [
+    { x: 297, y: 621, milliseconds: 1717788286801 },
+    { x: 380, y: 429, milliseconds: 1717788286803 },
+    { x: 326, y: 215, milliseconds: 1717788286803 },
+  ],
+  [
+    { x: 297, y: 621, milliseconds: 1717788286801 },
+    { x: 380, y: 429, milliseconds: 1717788286803 },
+    { x: 326, y: 215, milliseconds: 1717788286803 },
+  ],
+  [
+    { x: 297, y: 621, milliseconds: 1717788286801 },
+    { x: 380, y: 429, milliseconds: 1717788286803 },
+    { x: 326, y: 215, milliseconds: 1717788286803 },
+  ],
+  [
+    { x: 297, y: 621, milliseconds: 1717788286801 },
+    { x: 380, y: 429, milliseconds: 1717788286803 },
+    { x: 326, y: 215, milliseconds: 1717788286803 },
+  ],
+];
+
+const indexGrupos = [
+  [10, 18],
+  [100, 123],
+  [205, 245],
+];
+
+// quiero una funcion que evalue que si el indice de este array  se encuentra entre los valores de la primera y la segunda posicion de los elementos  de este otro, y que si se cumple esa condicion se realice un push de la siguiente manera: groups2.push([groups[index][0], group[index][2], group[index][1]]),  y si no se cumple esa condicion el push seria: group2.push([groups[index][0], group[index][2], group[index][1]])

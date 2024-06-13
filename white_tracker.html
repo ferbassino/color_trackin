@@ -13,6 +13,13 @@
       src="https://cdn.plot.ly/plotly-2.32.0.min.js"
       charset="utf-8"
     ></script>
+    <style>
+      .timer {
+        font-size: 48px;
+        margin-bottom: 20px;
+        margin-left: 20px;
+      }
+    </style>
   </head>
   <body>
     <nav class="navbar">
@@ -32,7 +39,9 @@
             detect certain colors in a video
           </p>
         </div>
-        <h2>Cargar Video</h2>
+        <div class="container">
+          <div class="timer" id="timer">00:00:000</div>
+        </div>
         <input type="file" id="fileInput" accept="video/*" />
         <button id="loadButton"></button>
         <button onclick="startTracking()" id="init_buton">analizar</button>
@@ -43,26 +52,72 @@
             <div id="rectangle"></div>
             <video id="videoPlayer" preload autoplay muted controls>
               <source id="videoSource" type="video/mp4" />
-              <!-- <source src="assets/minions.ogv" type="video/ogg" /> -->
             </video>
             <canvas id="canvas" width="800" height="800"></canvas>
           </div>
         </div>
+        <div class="right">
+          <div id="tester" style="width: 800px; height: 800px"></div>
+        </div>
       </div>
-    </div>
-    <div class="right">
-      <div id="tester" style="width: 600px; height: 250px"></div>
     </div>
 
     <script>
-      var video = document.getElementById("videoPlayer");
+      // --------------------- cronometro
+      let timerInterval;
+      let startTime;
+      let running = false;
+      const timerDisplay = document.getElementById("timer");
+      const startButton = document.getElementById("init_buton");
+      const stopButton = document.getElementById("stopButton");
+      // ingresamos la calibración
+      const pixelEnMetros = 0.0022;
+      function startTimer() {
+        if (!running) {
+          running = true;
+          startTime = Date.now();
+          timerInterval = setInterval(updateTimer, 10);
+        }
+      }
 
+      function stopTimer() {
+        if (running) {
+          running = false;
+          clearInterval(timerInterval);
+        }
+      }
+
+      function updateTimer() {
+        const elapsedTime = Date.now() - startTime;
+
+        const minutes = Math.floor(elapsedTime / (1000 * 60))
+          .toString()
+          .padStart(2, "0");
+        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000)
+          .toString()
+          .padStart(2, "0");
+        const milliseconds = Math.floor(elapsedTime % 1000)
+          .toString()
+          .padStart(3, "0");
+        timerDisplay.textContent = `${minutes}:${seconds}:${milliseconds}`;
+        localStorage.setItem("duration", JSON.stringify(elapsedTime));
+      }
+
+      startButton.addEventListener("click", startTimer);
+      stopButton.addEventListener("click", stopTimer);
+
+      // -------------------- fin cronometro
+
+      var video = document.getElementById("videoPlayer");
+      let fps;
       video.addEventListener("loadedmetadata", function (event) {
         var videoWidth = event.target.videoWidth;
         var videoHeight = event.target.videoHeight;
+        fps = this.duration;
 
         localStorage.setItem("videoWidth", JSON.stringify(videoWidth));
         localStorage.setItem("videoHeight", JSON.stringify(videoHeight));
+        localStorage.setItem("fps", JSON.stringify(fps));
       });
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -103,6 +158,7 @@
           initGUIControllers(tracker);
         }
       });
+
       const startTracking = () => {
         var canvas = document.getElementById("canvas");
         var context = canvas.getContext("2d");
@@ -132,30 +188,46 @@
         const init = document.getElementById("init_buton");
         let xArray = [];
         let yArray = [];
+
+        let yPositionInnit = 0;
+        let yPositionInnitState = false;
+
         tracker.on("track", function (event) {
           var videoWidth = JSON.parse(localStorage.getItem("videoWidth"));
           var videoHeight = JSON.parse(localStorage.getItem("videoHeight"));
           context.clearRect(0, 0, videoWidth, videoHeight);
           // context.clearRect(0, 0, canvas.width, canvas.height);
           event.data.forEach(function (rect) {
+            // capturar primer valor de y
+            if (!yPositionInnitState) {
+              yPositionInnit = rect.y;
+              console.log("Primer valor ingresado:", yPositionInnit);
+              yPositionInnitState = true;
+            }
+
+            // --------------------------
+
             if (rect.color === "custom") {
               rect.color = tracker.customColor;
             }
 
-            xArray.push(rect.x);
-            yArray.push(videoHeight - rect.y);
-            if (xArray.length > 3) {
+            xArray.push(rect.x * pixelEnMetros);
+            yArray.push((videoHeight - rect.y) * pixelEnMetros);
+            if (xArray.length > 250) {
               xArray.shift();
               yArray.shift();
             }
 
+            // const arrayTime = [];
+            // arrayTime.push(Date.now());
             array.push({
-              x: rect.x,
-              y: videoHeight - rect.y,
+              x: rect.x * pixelEnMetros,
+              y: (videoHeight - rect.y) * pixelEnMetros,
               milliseconds: Date.now(),
             });
 
             localStorage.setItem("array", JSON.stringify(array));
+            // localStorage.setItem("arrayTime", JSON.stringify(arrayTime));
 
             context.strokeStyle = rect.color;
 
@@ -163,26 +235,30 @@
             context.font = "11px Helvetica";
             context.fillStyle = "#fff";
             context.fillText(
-              "x: " + rect.x + "px",
+              "x: " + (rect.x * pixelEnMetros).toFixed(2),
               rect.x + rect.width + 5,
               rect.y + 11
             );
             context.fillText(
-              "y: " + (464 - rect.y) + "px",
+              "y: " + ((videoHeight - rect.y) * pixelEnMetros).toFixed(2),
               rect.x + rect.width + 5,
               rect.y + 22
             );
-            context.fillText(
-              "color: " + rect.color,
-              rect.x + rect.width + 5,
-              rect.y + 36
-            );
+            // context.fillText(
+            //   "color: " + rect.color,
+            //   rect.x + rect.width + 5,
+            //   rect.y + 36
+            // );
           });
+
           var layout = {
-            width: 500,
-            height: 500,
-            xaxis: { range: [0, 400] },
-            yaxis: { range: [0, 800] },
+            width: 700,
+            height: 700,
+            xaxis: { range: [0, 1] },
+            yaxis: { range: [0, 1.5] },
+            plot_bgcolor: "#000", // Color de fondo del gráfico
+            paper_bgcolor: "#000", // Color de fondo del papel
+            color: "#fff",
           };
           TESTER = document.getElementById("tester");
 
@@ -193,14 +269,10 @@
                 x: xArray,
                 y: yArray,
                 type: "scatter",
-                // mode: "markers",
+                mode: "markers",
                 marker: {
-                  size: 5,
-                  // color: [
-                  //   0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16,
-                  //   17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31,
-                  //   32, 33, 34, 35, 36, 37, 38, 39,
-                  // ],
+                  size: 4,
+                  color: "#fc0f0f",
                 },
               },
             ],

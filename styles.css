@@ -47,7 +47,20 @@ body {
       canvas {
         position: absolute;
       }
-    
+  
+      .contenedor{
+        position: relative;
+      }
+
+      .right{
+        position: absolute; /* Posiciona este elemento de forma absoluta */
+  top: 250px;
+  left: calc(360px + 10px); 
+  width: 100px; /* Ajusta según tu necesidad */
+  height: 50px; /* Ajusta según tu necesidad */
+  z-index: -1000;
+  
+      }
 @media screen and (max-width: 768px) {
   .menu {
     display: flex;
