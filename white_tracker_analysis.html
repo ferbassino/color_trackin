@@ -417,36 +417,6 @@
 
       const ctx = document.getElementById("myChart");
 
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels: intervalArray,
-          datasets: [
-            {
-              label: "knee",
-              data: resultado,
-              borderWidth: 1,
-            },
-            {
-              label: "knee",
-              data: datosSuavizados,
-              borderWidth: 1,
-            },
-            {
-              label: "knee",
-              data: yAcceleration,
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          scales: {
-            y: {
-              beginAtZero: true,
-            },
-          },
-        },
-      });
       // new Chart(ctx, {
       //   type: "line",
       //   data: {
@@ -454,17 +424,17 @@
       //     datasets: [
       //       {
       //         label: "knee",
-      //         data: kneeAngle,
+      //         data: resultado,
       //         borderWidth: 1,
       //       },
       //       {
-      //         label: "hip",
-      //         data: hipAngle,
+      //         label: "knee",
+      //         data: datosSuavizados,
       //         borderWidth: 1,
       //       },
       //       {
-      //         label: "ankle",
-      //         data: ankleAngle,
+      //         label: "knee",
+      //         data: yAcceleration,
       //         borderWidth: 1,
       //       },
       //     ],
@@ -477,12 +447,42 @@
       //     },
       //   },
       // });
+      new Chart(ctx, {
+        type: "line",
+        data: {
+          labels: intervalArray,
+          datasets: [
+            {
+              label: "knee",
+              data: kneeAngle,
+              borderWidth: 1,
+            },
+            {
+              label: "hip",
+              data: hipAngle,
+              borderWidth: 1,
+            },
+            {
+              label: "ankle",
+              data: ankleAngle,
+              borderWidth: 1,
+            },
+          ],
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true,
+            },
+          },
+        },
+      });
       TESTER = document.getElementById("tester");
       var layout = {
         width: 1000,
         height: 800,
-        xaxis: { range: [0, 800] },
-        yaxis: { range: [0, 800] },
+        xaxis: { range: [0, 1.5] },
+        yaxis: { range: [0, 2] },
       };
 
       Plotly.newPlot(
@@ -506,31 +506,31 @@
               size: 2,
             },
           },
-          {
-            x: gammaX,
-            y: gammaY,
-            type: "scatter",
-            mode: "markers",
-            marker: {
-              size: 1,
-            },
-          },
-          {
-            x: lambdaX,
-            y: lambdaY,
-            type: "scatter",
-            mode: "markers",
-            marker: {
-              size: 2,
-            },
-          },
+          // {
+          //   x: gammaX,
+          //   y: gammaY,
+          //   type: "scatter",
+          //   mode: "markers",
+          //   marker: {
+          //     size: 1,
+          //   },
+          // },
+          // {
+          //   x: lambdaX,
+          //   y: lambdaY,
+          //   type: "scatter",
+          //   mode: "markers",
+          //   marker: {
+          //     size: 2,
+          //   },
+          // },
           {
             x: epsilonX,
             y: epsilonY,
             type: "scatter",
             mode: "markers",
             marker: {
-              size: 2,
+              size: 4,
             },
           },
         ],

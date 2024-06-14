@@ -201,7 +201,7 @@
             // capturar primer valor de y
             if (!yPositionInnitState) {
               yPositionInnit = rect.y;
-              console.log("Primer valor ingresado:", yPositionInnit);
+
               yPositionInnitState = true;
             }
 
@@ -213,7 +213,7 @@
 
             xArray.push(rect.x * pixelEnMetros);
             yArray.push((videoHeight - rect.y) * pixelEnMetros);
-            if (xArray.length > 250) {
+            if (xArray.length > 500) {
               xArray.shift();
               yArray.shift();
             }
@@ -253,9 +253,9 @@
 
           var layout = {
             width: 700,
-            height: 700,
-            xaxis: { range: [0, 1] },
-            yaxis: { range: [0, 1.5] },
+            height: videoHeight,
+            xaxis: { range: [0.2, 0.9] },
+            yaxis: { range: [0.25, 1.7] },
             plot_bgcolor: "#000", // Color de fondo del gráfico
             paper_bgcolor: "#000", // Color de fondo del papel
             color: "#fff",
@@ -271,8 +271,8 @@
                 type: "scatter",
                 mode: "markers",
                 marker: {
-                  size: 4,
-                  color: "#fc0f0f",
+                  size: 5,
+                  color: "#5efa0a",
                 },
               },
             ],
