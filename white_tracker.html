@@ -201,7 +201,7 @@
             // capturar primer valor de y
             if (!yPositionInnitState) {
               yPositionInnit = rect.y;
-
+              console.log("Primer valor ingresado:", yPositionInnit);
               yPositionInnitState = true;
             }
 
@@ -221,8 +221,8 @@
             // const arrayTime = [];
             // arrayTime.push(Date.now());
             array.push({
-              x: rect.x * pixelEnMetros,
-              y: (videoHeight - rect.y) * pixelEnMetros,
+              x: rect.x,
+              y: videoHeight - rect.y,
               milliseconds: Date.now(),
             });
 
@@ -235,12 +235,12 @@
             context.font = "11px Helvetica";
             context.fillStyle = "#fff";
             context.fillText(
-              "x: " + (rect.x * pixelEnMetros).toFixed(2),
+              "x: " + rect.x.toFixed(2),
               rect.x + rect.width + 5,
               rect.y + 11
             );
             context.fillText(
-              "y: " + ((videoHeight - rect.y) * pixelEnMetros).toFixed(2),
+              "y: " + (videoHeight - rect.y).toFixed(2),
               rect.x + rect.width + 5,
               rect.y + 22
             );

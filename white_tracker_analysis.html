@@ -27,6 +27,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numbers.js/0.7.0/numbers.min.js"></script>
 
     <script>
       var array = JSON.parse(localStorage.getItem("array"));
@@ -44,7 +45,7 @@
           },
         ],
       };
-      console.log(array);
+
       // dividir en grupos de a tres
       function splitIntoGroups(array) {
         const groups = [];
@@ -144,6 +145,17 @@
         lambda.length,
         epsilon.length
       );
+
+      if (
+        alpha.length !== beta.length &&
+        beta.length !== gamma.length &&
+        gamma.length !== lambda.length &&
+        lambda.length !== beta.length - 1
+      ) {
+        alert(
+          "An error occurred while tracking the trajectory. Please try again. Remember to start tracking when the foot is flat on the ground."
+        );
+      }
       // ------------------------------groups------------
       const el = [
         { x: 291, y: 590, milliseconds: 1717380326188 },
@@ -282,7 +294,6 @@
         epsilonY.push(el.y);
       });
 
-      console.log(alphaY[0] - betaY[0]);
       // -------------------- fin gota
 
       const alphaY0 = [];
@@ -389,7 +400,6 @@
         ventana,
         gradoPolinomio
       );
-      console.log("Datos suavizados:", datosSuavizados);
 
       // -------------fin derivada de la posición
       function interpolacionPolinomicaDerivada(pixeles, intervaloTiempo) {
@@ -414,6 +424,44 @@
         correctedInterval
       );
       // derivada de la velocidad
+
+      // analisis de la gota buscamoe el indice mas bajo de las posiciones en y de epsilon
+
+      const refValue = epsilonY[0];
+
+      const epsilonYMean = numbers.statistic.median(epsilonY);
+
+      const epsilonYMax = Math.max(...epsilonY);
+      const epsilonYMin = Math.min(...epsilonY);
+
+      const meanValue = (epsilonYMax - epsilonYMin) / 2 + epsilonYMin;
+
+      let initialValue = 0;
+      let initialValueIndex = 0;
+      if (refValue < meanValue) {
+        console.log("esta por abajo");
+
+        initialValueIndex = epsilonY.findIndex((el, index) => {
+          el > meanValue;
+        });
+        initialValue = epsilonY.find(
+          (el, index) => index === initialValueIndex
+        );
+      } else {
+        console.log(el, meanValue);
+        console.log("esta por arriba");
+        const firstDown = epsilonY.findIndex((el) => el < meanValue);
+
+        initialValueIndex = epsilonY.findIndex((el, index) => {
+          el > meanValue && index > firstDown;
+        });
+        initialValue = epsilonY.find(
+          (el, index) => index === initialValueIndex
+        );
+      }
+
+      console.log("refvalue", refValue, "mean", meanValue);
+      console.log("valor incial", initialValue, "index", initialValueIndex);
 
       const ctx = document.getElementById("myChart");
 
@@ -481,8 +529,8 @@
       var layout = {
         width: 1000,
         height: 800,
-        xaxis: { range: [0, 1.5] },
-        yaxis: { range: [0, 2] },
+        xaxis: { range: [0, 500] },
+        yaxis: { range: [0, 800] },
       };
 
       Plotly.newPlot(
@@ -515,15 +563,15 @@
           //     size: 1,
           //   },
           // },
-          // {
-          //   x: lambdaX,
-          //   y: lambdaY,
-          //   type: "scatter",
-          //   mode: "markers",
-          //   marker: {
-          //     size: 2,
-          //   },
-          // },
+          {
+            x: lambdaX,
+            y: lambdaY,
+            type: "scatter",
+            mode: "markers",
+            marker: {
+              size: 2,
+            },
+          },
           {
             x: epsilonX,
             y: epsilonY,
