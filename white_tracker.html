@@ -109,15 +109,14 @@
       // -------------------- fin cronometro
 
       var video = document.getElementById("videoPlayer");
-      let fps;
+
       video.addEventListener("loadedmetadata", function (event) {
         var videoWidth = event.target.videoWidth;
         var videoHeight = event.target.videoHeight;
-        fps = this.duration;
+        // fps = this.duration;
 
         localStorage.setItem("videoWidth", JSON.stringify(videoWidth));
         localStorage.setItem("videoHeight", JSON.stringify(videoHeight));
-        localStorage.setItem("fps", JSON.stringify(fps));
       });
 
       document.addEventListener("DOMContentLoaded", function () {
@@ -160,6 +159,24 @@
       });
 
       const startTracking = () => {
+        // ----------frames-----------------------
+        var v = document.getElementById("videoPlayer");
+        var c = 0; // time of last frame
+        var framelength = 1; // length of one frame
+        var fps;
+        function check(t, m) {
+          var diff = Math.abs(m.mediaTime - c); // difference between this frame and the last
+          if (diff && diff < framelength) {
+            framelength = diff;
+            fps = Number((1 / framelength).toFixed(2));
+          }
+          c = m.mediaTime;
+          v.requestVideoFrameCallback(check);
+          console.log(fps);
+          localStorage.setItem("fps", JSON.stringify(fps));
+        }
+        v.requestVideoFrameCallback(check);
+        // ----------frames-----------------------
         var canvas = document.getElementById("canvas");
         var context = canvas.getContext("2d");
 
@@ -199,24 +216,24 @@
           // context.clearRect(0, 0, canvas.width, canvas.height);
           event.data.forEach(function (rect) {
             // capturar primer valor de y
-            if (!yPositionInnitState) {
-              yPositionInnit = rect.y;
-              console.log("Primer valor ingresado:", yPositionInnit);
-              yPositionInnitState = true;
-            }
+            // if (!yPositionInnitState) {
+            //   yPositionInnit = rect.y;
+            //   console.log("Primer valor ingresado:", yPositionInnit);
+            //   yPositionInnitState = true;
+            // }
 
             // --------------------------
 
-            if (rect.color === "custom") {
-              rect.color = tracker.customColor;
-            }
+            // if (rect.color === "custom") {
+            //   rect.color = tracker.customColor;
+            // }
 
-            xArray.push(rect.x * pixelEnMetros);
-            yArray.push((videoHeight - rect.y) * pixelEnMetros);
-            if (xArray.length > 500) {
-              xArray.shift();
-              yArray.shift();
-            }
+            // xArray.push(rect.x * pixelEnMetros);
+            // yArray.push((videoHeight - rect.y) * pixelEnMetros);
+            // if (xArray.length > 500) {
+            //   xArray.shift();
+            //   yArray.shift();
+            // }
 
             // const arrayTime = [];
             // arrayTime.push(Date.now());
@@ -251,37 +268,37 @@
             // );
           });
 
-          var layout = {
-            width: 700,
-            height: videoHeight,
-            xaxis: { range: [0.2, 0.9] },
-            yaxis: { range: [0.25, 1.7] },
-            plot_bgcolor: "#000", // Color de fondo del gráfico
-            paper_bgcolor: "#000", // Color de fondo del papel
-            color: "#fff",
-          };
-          TESTER = document.getElementById("tester");
+          // var layout = {
+          //   width: 700,
+          //   height: videoHeight,
+          //   xaxis: { range: [0.2, 0.9] },
+          //   yaxis: { range: [0.25, 1.7] },
+          //   plot_bgcolor: "#000",
+          //   paper_bgcolor: "#000",
+          //   color: "#fff",
+          // };
+          // TESTER = document.getElementById("tester");
 
-          Plotly.newPlot(
-            TESTER,
-            [
-              {
-                x: xArray,
-                y: yArray,
-                type: "scatter",
-                mode: "markers",
-                marker: {
-                  size: 5,
-                  color: "#5efa0a",
-                },
-              },
-            ],
-            layout,
+          // Plotly.newPlot(
+          //   TESTER,
+          //   [
+          //     {
+          //       x: xArray,
+          //       y: yArray,
+          //       type: "scatter",
+          //       mode: "markers",
+          //       marker: {
+          //         size: 5,
+          //         color: "#5efa0a",
+          //       },
+          //     },
+          //   ],
+          //   layout,
 
-            {
-              margin: { t: 0 },
-            }
-          );
+          //   {
+          //     margin: { t: 0 },
+          //   }
+          // );
         });
       };
       const stopTracking = () => {
