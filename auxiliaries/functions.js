@@ -1,5 +1,4 @@
 var fps = JSON.parse(localStorage.getItem("fps"));
-var duration = JSON.parse(localStorage.getItem("duration"));
 
 // funcion para dividir el array en cinco grupos segun el intervalo de tiempo y poder determinar los instantes
 
@@ -144,7 +143,7 @@ export function obtenerAngulos(alpha, beta, gamma, lambda, epsilon) {
   const kneeAngle = [];
   const ankleAngle = [];
 
-  for (let index = 0; index < alpha.length - 10; index++) {
+  for (let index = 0; index < alpha.length - 1; index++) {
     kneeAngle.push(
       (Math.acos(
         ((beta[index].x - alpha[index].x) * (gamma[index].x - beta[index].x) +
@@ -273,10 +272,9 @@ export function deDiscretoAContinuo(arr) {
 }
 
 // función para derivar
-export function derivada(pixeles, intervaloTiempo) {
+export function derivada(pixeles, interval) {
   const n = pixeles.length;
-  const h = intervaloTiempo;
-
+  const h = interval;
   const derivada = [];
   for (let i = 1; i < n - 1; i++) {
     const f_i1 = pixeles[i + 1];
@@ -330,7 +328,7 @@ export function getTimeArray(array, interval) {
 }
 
 // obtener tiempo real e intervalo de tiempo corregido
-export function obtenerTiempoEIntervaloReal(groups) {
+export function obtenerTiempoEIntervaloReal(groups, duration) {
   const correctedGroups = [];
 
   let repoitedGroups = 0;
@@ -353,7 +351,7 @@ export function obtenerTiempoEIntervaloReal(groups) {
       correctedGroups.push(groups[index]);
     }
   }
-  console.log("repetidos", repoitedGroups);
+
   const realTime = ((duration / 1000) * fps) / 240;
 
   const correctedInterval = realTime / correctedGroups.length;
@@ -400,7 +398,7 @@ export function filtrarRepetidosMarcadores(
     alpha.map((element, index) => {
       if (element.milliseconds === el[0].milliseconds) {
         newAlpha.push(alpha[index]);
-        newBeta.push(alpha[index]);
+        newBeta.push(beta[index]);
         newGamma.push(gamma[index]);
         newLambda.push(lambda[index]);
         newEpsilon.push(epsilon[index]);
@@ -408,4 +406,66 @@ export function filtrarRepetidosMarcadores(
     });
   });
   return { newAlpha, newBeta, newGamma, newLambda, newEpsilon };
+}
+
+export const getIntervalRealArray = (array) => {
+  let intervalTimeCount = 0;
+  const intervalRealArray = [];
+  for (let index = 0; index < array.length - 1; index++) {
+    intervalTimeCount +=
+      array[index + 1].milliseconds - array[index].milliseconds;
+
+    intervalRealArray.push(intervalTimeCount);
+  }
+
+  return intervalRealArray;
+};
+export const getSecondsIntervalRealArray = (array, fps) => {
+  const intervalSecondsRealArray = [];
+  array.map((el) =>
+    intervalSecondsRealArray.push(
+      Number((((el / 1000) * fps) / 240).toFixed(4))
+    )
+  );
+
+  return intervalSecondsRealArray;
+};
+export const getIntervalBetweenIndexes = (array, aIndex, bIndex) => {
+  const arrayBetweenIndexes = [];
+
+  array.map((el, index) => {
+    if (index >= aIndex && index <= bIndex) {
+      arrayBetweenIndexes.push(el);
+    }
+  });
+  return arrayBetweenIndexes;
+};
+
+export function findCrossingPoints(arr, mean) {
+  let crossingPoints = [];
+
+  for (let i = 1; i < arr.length; i++) {
+    if (
+      (arr[i - 1] < mean && arr[i] >= mean) ||
+      (arr[i - 1] > mean && arr[i] <= mean)
+    ) {
+      // Encontrar el punto exacto de cruce usando interpolación lineal
+      let x0 = i - 1;
+      let x1 = i;
+      let y0 = arr[x0];
+      let y1 = arr[x1];
+
+      // La fórmula de interpolación lineal para encontrar el punto exacto de cruce
+      let xCross = x0 + (mean - y0) / (y1 - y0);
+      crossingPoints.push(Math.ceil(xCross));
+    }
+  }
+
+  return crossingPoints;
+}
+
+export function obtenerImpares(array) {
+  return array.filter(function (numero) {
+    return numero % 2 !== 0;
+  });
 }

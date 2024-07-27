@@ -258,6 +258,7 @@ let initialValueIndex = 0;
 
 let crossings = findCrossingPoints(epsilonY, meanValue);
 
+console.log("crossing", crossings);
 // INDEX0: buscamos el indice del primer elemento mayor al valor medio (mean value). IMPORTANTE: cuando comienza el análisis el pie debe estar en apoyo medio
 
 // inserción en el dom
@@ -318,7 +319,7 @@ crossings.map((element, index) => {
   const lXarrayIndex = [];
 
   epsilonX.map((el, i) => {
-    if (i > element && i < crossings[index + 1]) {
+    if (i >= element && i <= crossings[index + 1]) {
       eYarray.push(epsilonY[i]);
       eXarray.push(el);
       lYarray.push(lambdaY[i]);
@@ -388,7 +389,7 @@ maxEpsilonXOddIndex2.map((el, index) => {
   const currentArray = [];
   if (index % 2 !== 0) {
     epsilonX.map((element, i) => {
-      if (i > el.currentIndex && i < crossings[index + 1]) {
+      if (i >= el.currentIndex && i <= crossings[index + 1]) {
         currentArray.push(element);
       }
     });
@@ -396,58 +397,240 @@ maxEpsilonXOddIndex2.map((el, index) => {
     xMaxToEven.push(currentArray);
   }
 });
-const timeDerivada = [];
-xMaxToEvenDerivada.map((el, index) => {
-  timeDerivada.push(getTimeArray(el, correctedInterval));
+console.log("derivada", xMaxToEvenDerivada);
+
+console.log("xmax", xMaxToEven);
+console.log("odindex", maxEpsilonXOddIndex);
+console.log(epsilonX);
+
+// maxEpsilonXOddIndex2.map((el, index) => {
+//   const xMaxToEven = [];
+//   epsilonX.map((element, i) => {
+//     if (i > el.currentIndex && i < crossings[index + 1]) {
+//       console.log("entra");
+//       xMaxToEven.push(element);
+//     }
+//   });
+// });
+
+// ahora hacemos arreglos entre el máximo y el posterior par
+const epsilonXmaxEven = [];
+
+// obtenemos el índice de los máximos en spsilonX
+
+// buscamos los máximos de epsilon x entre los índex
+
+// INDEX1: buscamos el indice del primer elemento menor a la media pero con el indice mayor a index0
+const index1 = epsilonY.findIndex(
+  (el, index) => el < meanValue && index > index0
+);
+
+// INDEX2: buscamos el indice del primer elemento mayor a la medioa pero con el indice mayor a index1. el resto respeta el mismo patrón
+const index2 = epsilonY.findIndex(
+  (el, index) => el > meanValue && index > index1
+);
+const index3 = epsilonY.findIndex(
+  (el, index) => el < meanValue && index > index2
+);
+const index4 = epsilonY.findIndex(
+  (el, index) => el > meanValue && index > index3
+);
+
+const index5 = epsilonY.findIndex(
+  (el, index) => el < meanValue && index > index4
+);
+const index6 = epsilonY.findIndex(
+  (el, index) => el > meanValue && index > index5
+);
+
+console.log(index0, index1, index2, index3, index4, index5, index6);
+
+// 3. arreglos entre los índices
+// creamos los arreglos entre los indices anteriores. cada array es un ciclo con una curva de concavidad hacia abajo que corresponde aproximadamente a la fase de recobro, y una curva de concavidad superior que contiene a la fase de apoyo
+
+const array02 = [];
+const array24 = [];
+const array46 = [];
+
+//
+
+epsilonY.map((el, index) => {
+  index >= index0 && index < index2 && array02.push(el);
+  index >= index2 && index < index4 && array24.push(el);
+  index >= index4 && index < index6 && array46.push(el);
 });
 
-console.log(xMaxToEvenDerivada);
-console.log(xMaxToEven);
-console.log(maxEpsilonXOddIndex);
+// 5. aislamos la parte de la curva que contiene a la fase de apoyo, tanto de los datos en y y en x
 
-// toeoff
+const arrayY12 = [];
+const arrayY34 = [];
+const arrayY56 = [];
+
+epsilonY.map((el, index) => {
+  index >= index1 && index < index2 && arrayY12.push(el);
+  index >= index3 && index < index4 && arrayY34.push(el);
+  index >= index5 && index < index6 && arrayY56.push(el);
+});
+
+const arrayX12 = [];
+const arrayX34 = [];
+const arrayX56 = [];
+
+epsilonX.map((el, index) => {
+  index >= index1 && index < index2 && arrayX12.push(el);
+  index >= index3 && index < index4 && arrayX34.push(el);
+  index >= index5 && index < index6 && arrayX56.push(el);
+});
+
+// 6. VALOR MÁXIMO DE X: obtenemos el valor máximo de x porque es el punto mas adelantado del pie. y luego buscamos el índice
+
+const x12max = Math.max(...arrayX12);
+
+const x12maxIndex = arrayX12.findIndex((el) => el === x12max);
+
+// 7. cremos un arreglo para x y para y para obtener los valores  se encuentran luego de que el pie comienza a ir hacia atras que corresponde al valor maximo de x
+
+const arrayY12XMax = [];
+const arrayX12XMax = [];
+
+arrayX12.map((el, index) => {
+  if (index >= x12maxIndex) {
+    arrayX12XMax.push(el);
+    arrayY12XMax.push(arrayY12[index]);
+  }
+});
+
+// El array arrayY12XMax solo contiene datos discretos pasamos el array arrayY12XMax de discreto a continuo para obtener valores mas claros en la derivada
+
+const arrayY12XMaxContinuo = deDiscretoAContinuo(arrayY12XMax);
+const arrayX12XMaxContinuo = deDiscretoAContinuo(arrayX12XMax);
+
+// derivamos para obtener donde la derivada se aproxima a 0 que corresponde al periodo de contacto del pie sobre el suelo
+
+const derivadaY = derivada(arrayY12XMaxContinuo, correctedInterval);
+const derivadaX = derivada(arrayX12XMaxContinuo, correctedInterval);
+const median12DerivadaX = parseInt(numbers.statistic.median(derivadaX));
+
+const toeOffXIndex = obtenerIndexRamaAscendente(derivadaX);
+
+const derivadaYTimeArray = getTimeArray(derivadaY, correctedInterval);
+// filtro de la derivada (no lo estamos aplicando)
+
+const ventana = 3; // Tamaño de la ventana (debe ser impar)
+const gradoPolinomio = 2; // Grado del polinomio de ajuste (puedes ajustarlo según tus necesidades)
+const derivadaFiltrada = savitzkyGolay(derivadaY, ventana, gradoPolinomio);
+
+//  ---------------fin filtro ---------------------------
 
 // ----------- ANÁLISIS DE LA DERIVADA / TOE OFF Y CI
 
 // la función obtiene  la mediana de la derivada que va a estar próximo a 0 y luego capturamos el primer valor de la curva ascendente que corresponde al toeoff
-const toeOffLocalIndex = [];
 
-xMaxToEvenDerivada.map((el) =>
-  toeOffLocalIndex.push(obtenerIndexRamaAscendente(el))
+const toeOffIndex = obtenerIndexRamaAscendente(derivadaY);
+
+// ahora buscamos el contacto inicial que seria el primer valor igual a la mediana + - 20 y que tenga los 10 valores anteriores que sean menores
+const median = numbers.statistic.median(derivadaY);
+
+const initialContactIndex = derivadaY.findIndex(
+  (el, index) =>
+    el < median &&
+    el > derivadaY[index - 1] &&
+    el > derivadaY[index - 3] &&
+    el > derivadaY[index - 5] &&
+    el > derivadaY[index - 7] &&
+    el > derivadaY[index - 9] &&
+    el > derivadaY[index - 10]
 );
 
-const toeOffIndex = [];
-maxEpsilonXOddIndex.map((el, index) => {
-  console.log(toeOffLocalIndex[index], el.currentIndex);
-  toeOffIndex.push(toeOffLocalIndex[index] + el.currentIndex);
+const arrayTiempoY = [];
+let countTY = 0;
+arrayX12.map((el) => {
+  countTY += correctedInterval;
+  arrayTiempoY.push(countTY);
 });
-
-console.log(toeOffIndex);
-toeOffIndex.map((el, index) => console.log(intervalSecondsRealArray[el]));
-// ahora buscamos el contacto inicial que seria el primer valor igual a la mediana + - 20 y que tenga los 10 valores anteriores que sean menores
-console.log(intervalSecondsRealArray[323]);
-// const initialContactIndex = derivadaY.findIndex(
-//   (el, index) =>
-//     el < median &&
-//     el > derivadaY[index - 1] &&
-//     el > derivadaY[index - 3] &&
-//     el > derivadaY[index - 5] &&
-//     el > derivadaY[index - 7] &&
-//     el > derivadaY[index - 9] &&
-//     el > derivadaY[index - 10]
-// );
 
 // obtenemos el indice del array original mediante la suma de el toeOffIndex + x12maxIndex + index 1
 
+const toeOff2 = toeOffXIndex + x12maxIndex + index1;
+
+let toeoffTime = 0;
+
+correctedGroups.map((el, index) => {
+  if (index === toeOff2) {
+    toeoffTime =
+      (el[0].milliseconds - correctedGroups[0][0].milliseconds) / 1000;
+  }
+});
+
+// toeofftime es el tiempo en milisegundos pero en camara lenta entonces lo pasamos a segundos lo multiplicamos por los fps y lo dividimos por 240
+
+const toeoffTimeCorregido = (toeoffTime * 30) / 240;
+
+// ----------- segundo ciclo (index 3-4)
+// 6. VALOR MÁXIMO DE X: obtenemos el valor máximo de x porque es el punto mas adelantado del pie. y luego buscamos el índice
+
+const x34max = Math.max(...arrayX34);
+
+const x34maxIndex = arrayX34.findIndex((el) => el === x34max);
+
+// 7. cremos un arreglo para x y para y para obtener los valores  se encuentran luego de que el pie comienza a ir hacia atras que corresponde al valor maximo de x
+
+const arrayY34XMax = [];
+const arrayX34XMax = [];
+
+arrayX34.map((el, index) => {
+  if (index > x34maxIndex) {
+    arrayX34XMax.push(el);
+    arrayY34XMax.push(arrayY34[index]);
+  }
+});
+
+// El array arrayY12XMax solo contiene datos discretos pasamos el array arrayY12XMax de discreto a continuo para obtener valores mas claros en la derivada
+
+const arrayY34XMaxContinuo = deDiscretoAContinuo(arrayY34XMax);
+const arrayX34XMaxContinuo = deDiscretoAContinuo(arrayX34XMax);
+
+// derivamos para obtener donde la derivada se aproxima a 0 que corresponde al periodo de contacto del pie sobre el suelo
+const arrayTimeDerivada34 = getIntervalBetweenIndexes(
+  intervalSecondsRealArray,
+  x34maxIndex + index3,
+  index4
+);
+const derivadaY34 = derivada(arrayY34XMaxContinuo, correctedInterval);
+const derivadaX34 = derivada(arrayX34XMaxContinuo, correctedInterval);
+
+const derivadaYTimeArray34 = getTimeArray(derivadaY34, correctedInterval);
+
+// filtro de la derivada (no lo estamos aplicando)
+
+const ventana34 = 3; // Tamaño de la ventana (debe ser impar)
+const gradoPolinomio34 = 2; // Grado del polinomio de ajuste (puedes ajustarlo según tus necesidades)
+const derivadaFiltrada34 = savitzkyGolay(
+  derivadaY34,
+  ventana34,
+  gradoPolinomio34
+);
+
+//  ---------------fin filtro ---------------------------
+
+// ----------- ANÁLISIS DE LA DERIVADA / TOE OFF Y CI
+
+// la función obtiene  la mediana de la derivada que va a estar próximo a 0 y luego capturamos el primer valor de la curva ascendente que corresponde al toeoff
+
+const toeOffIndex34 = obtenerIndexRamaAscendente(derivadaY34);
+const toeOffXIndex34 = obtenerIndexRamaAscendente(derivadaX34);
+
+// console.log(derivadaX34);
+
 const posiciones = document.getElementById("posiciones");
-// graficoDosVariables(
-//   posiciones,
-//   intervalSecondsRealArray,
-//   epsilonY,
-//   "Trayectoria en y quinto",
-//   lambdaY,
-//   "Trayectoria en y talon"
-// );
+graficoDosVariables(
+  posiciones,
+  intervalSecondsRealArray,
+  epsilonY,
+  "Trayectoria en y quinto",
+  lambdaY,
+  "Trayectoria en y talon"
+);
 
 // graficoCuatroVariables(
 //   posiciones,
@@ -461,22 +644,98 @@ const posiciones = document.getElementById("posiciones");
 //   lambdaX,
 //   "trayectoria talonx"
 // );
-// const posicionesLambda = document.getElementById("posiciones-lambda");
-// graficoDosVariables(
-//   posicionesLambda,
-//   intervalSecondsRealArray,
-//   lambdaY,
-//   "Trayectoria en y",
-//   lambdaX,
-//   "Trayectoria en x"
-// );
+const posicionesLambda = document.getElementById("posiciones-lambda");
+graficoDosVariables(
+  posicionesLambda,
+  intervalSecondsRealArray,
+  lambdaY,
+  "Trayectoria en y",
+  lambdaX,
+  "Trayectoria en x"
+);
 
 // ahora buscamos el contacto inicial que seria el primer valor igual a la mediana + - 20 y que tenga los 10 valores anteriores que sean menores
 
+const arrayTiempoY34 = [];
+let countTY34 = 0;
+arrayX34.map((el) => {
+  countTY34 += correctedInterval;
+  arrayTiempoY34.push(countTY34);
+});
+
+// obtenemos el indice del array original mediante la suma de el toeOffIndex + x12maxIndex + index 1
+
+const toeOff234 = toeOffXIndex34 + x34maxIndex + index3;
+
+let toeoffTime34 = 0;
+
+correctedGroups.map((el, index) => {
+  if (index === toeOff234) {
+    toeoffTime34 =
+      (el[0].milliseconds - correctedGroups[0][0].milliseconds) / 1000;
+  }
+});
+
+// toeofftime es el tiempo en milisegundos pero en camara lenta entonces lo pasamos a segundos lo multiplicamos por los fps y lo dividimos por 240
+
+const toeoffTimeCorregido34 = (toeoffTime34 * 30) / 240;
+// LAMBDA
+// obtnenemos la derivada entre index3 y toeoff234
+
+const lambdaYIndex3Toeoff2 = [];
+const lambdaXIndex3Toeoff2 = [];
+lambdaY.map((el, index) => {
+  if (index >= x34maxIndex + index3 && index <= toeOff234) {
+    lambdaYIndex3Toeoff2.push(el);
+    lambdaXIndex3Toeoff2.push(lambdaX[index]);
+  }
+});
+const derivadaLambdaYIndex3Toeoff2 = derivada(
+  lambdaYIndex3Toeoff2,
+  correctedInterval
+);
+const derivadaLambdaXIndex3Toeoff2 = derivada(
+  lambdaXIndex3Toeoff2,
+  correctedInterval
+);
+
+const arrayDerivadaLambdaXIndex3Toeoff2 = getIntervalBetweenIndexes(
+  intervalSecondsRealArray,
+  x34maxIndex + index3,
+  toeOff234
+);
 // grafico de la derivada lambda
 const graficoDerivadaLambda = document.getElementById("derivada-lambda");
 // const ctx2 = document.getElementById("myChart2");
 
+graficoDosVariables(
+  graficoDerivadaLambda,
+  arrayDerivadaLambdaXIndex3Toeoff2,
+  derivadaLambdaYIndex3Toeoff2,
+  "",
+  derivadaLambdaXIndex3Toeoff2,
+  ""
+);
+const medianADLambdaIndexTO2 = numbers.statistic.median(
+  derivadaLambdaXIndex3Toeoff2
+);
+const arrayResta = [];
+derivadaLambdaXIndex3Toeoff2.map((el, index) => {
+  arrayResta.push(
+    derivadaLambdaYIndex3Toeoff2[index] - derivadaLambdaXIndex3Toeoff2[index]
+  );
+});
+
+const initialContactIndex34 = arrayResta.findIndex((el) => el > 200);
+
+const initialContact234Index = index3 + x34maxIndex + initialContactIndex34;
+
+const contacTime34 = getIntervalBetweenIndexes(
+  intervalSecondsRealArray,
+  initialContact234Index,
+  toeOff234
+);
+console.log(contacTime34[contacTime34.length - 1] - contacTime34[0]);
 // ----------- fin  segundo ciclo
 // -------------  GRAFICOS -----------------
 
@@ -485,7 +744,7 @@ const graficoDerivada = document.getElementById("derivada");
 
 graficoCuatroVariables(
   graficoDerivada,
-  timeDerivada[0],
+  arrayTimeDerivada34,
   xMaxToEvenDerivada[0],
   "",
   xMaxToEvenDerivada[1],

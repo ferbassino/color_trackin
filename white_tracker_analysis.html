@@ -13,26 +13,422 @@
   <style>
     body {
       background-color: cornsilk;
+      font-family: Arial, Helvetica, sans-serif;
+      padding-left: 30px;
+    }
+    pre {
+      background-color: #2d2d2d; /* Fondo oscuro para el bloque de código */
+      color: #dcdcdc; /* Texto claro */
+      padding: 10px;
+      border-radius: 5px;
+      overflow-x: auto; /* Para permitir desplazamiento horizontal */
+    }
+    code {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+      /* font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; */
+      color: #dcdcdc; /* Texto claro */
+      letter-spacing: 1px;
+    }
+    #angulos {
+      background-color: aliceblue;
+    }
+    .table-container {
+      width: 80%;
+      max-width: 800px;
+      margin: 0 auto;
+      border-collapse: collapse;
+      overflow-x: auto;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: #fff;
+    }
+
+    th,
+    td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+
+    th {
+      background-color: #f8f8f8;
+      font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
     }
   </style>
   <body>
-    <div>
-      <div class="menu">
-        <a href="/index.html">Home</a>
-        <a href="/white_tracker.html">Upload video</a>
-        <a href="/tracking.html">Real Time</a>
-        <a href="/white_tracker_analysis.html">Analysis</a>
-        <!-- <a href="#">Servicios</a>
+    <nav class="menu">
+      <a href="/index.html">Home</a>
+      <a href="/white_tracker.html">Upload video</a>
+      <a href="/tracking.html">Real Time</a>
+      <a href="/white_tracker_analysis.html">Analysis</a>
+      <!-- <a href="#">Servicios</a>
         <a href="#">Contacto</a> -->
+    </nav>
+
+    <header>
+      <h1>kinTrack</h1>
+      <h4>
+        kinTrack es un sistema de análisis biomecánico por rastreo de
+        trayectoria de segmentos corporales.
+      </h4>
+    </header>
+    <main>
+      <section>
+        <h3>Descripción</h3>
+        <p>
+          kinTrack es una aplicacion en la cual se cargan videos de corredores
+          que tienen colocados reflectivos en la cadera, rodilla, tobillo,
+          talón, y quinto metatarsiano. El video se carga en al aplicación y
+          esta realiza el análisis obteneiendo diferentes variables cinemáticas.
+        </p>
+      </section>
+
+      <section>
+        <h3>Proceso de captura</h3>
+        <p>
+          Cuando se carga el video este comienza a reproducirse automáticamente.
+          Para comenzar la captura debemos esperar al momente en que el pie del
+          lado de la captura se encuentra en pleno apoyo medio. En ese momento
+          presionamos "analizar". Contamos cinco cliclos y presionamos detener.
+          Una vez finalizada la captura vamos a la pestaña análisis y allí
+          encontraremos los resultados.
+        </p>
+
+        <h3>Datos iniciales capturados y guardados en el storage</h3>
+        <p>
+          Cuando se finaliza la captura se almacenan en el local storage una
+          serie de propiedades del video ademas de los datos
+        </p>
+        <ul>
+          <li>Ancho del video: <span id="video-width"></span> px</li>
+          <li>Alto del video: <span id="video-height"></span> px</li>
+          <li>Cuadros por segundo: <span id="frames"></span> fps</li>
+          <li>Datos de la captura:</li>
+        </ul>
+        <h3>Datos de captura</h3>
+        <ul>
+          <li>
+            corresponde a un arreglo de objetos. cada objeto tiene las
+            siguientes claves y valores
+          </li>
+          <li>{ x: 257, y: 607, milliseconds: 1721668233019 }</li>
+          <li>
+            x corresponde a los datos trasversales, y a los verticales y
+            millisecons al instante en milisegundos en que ocurre el evento.
+          </li>
+        </ul>
+        <h4>Se guardan en un arreglo como el que sigue:</h4>
+        <p>[</p>
+        <p>{x: 257, y: 607, milliseconds: 1721668233019}</p>
+        <p>{x: 321, y: 476, milliseconds: 1721668233019}</p>
+        <p>{x: 262, y: 352, milliseconds: 1721668233019}</p>
+        <p>{x: 251, y: 324, milliseconds: 1721668233019}</p>
+        <p>{x: 299, y: 318, milliseconds: 1721668233019}</p>
+        <p>{x: 257, y: 607, milliseconds: 1721668233030}</p>
+        <p>{x: 318, y: 474, milliseconds: 1721668233030}...</p>
+
+        <h3>Duración del video</h3>
+        <h4>
+          puede obtenerse despues del registro restando la marca de tiempo del
+          último elemento del array menos el primero:
+        </h4>
+        <pre>
+          <code>const videoDifDuration =
+         (array[array.length - 1].milliseconds - array[0].milliseconds) / 1000;</code>
+        </pre>
+
+        <h4>En este caso sería <span id="span-duration"></span> s</h4>
+        <p>
+          La duración del video corresponde al tiempo que transcurre durante la
+          captura. El tiempo se captura en milisegundos. Si se graba con captura
+          a fps normales, con ese tiempo se podría realizar el análisis. En el
+          caso de capturarse en cámara lenta debemos hacer la conversión al
+          tiempo real.
+        </p>
+        <h4>Si la captura se realiza a 240 sería:</h4>
+        <h4>Duración real = (duración de registro / 1000)* fps / 240</h4>
+        <ul>
+          donde
+          <li>
+            Duración del registro es la duracion del video en milisegundos
+          </li>
+          <li>fps son los cuadros por segundo del video</li>
+          <li>240 son los fps con los cuales fue grabado el video</li>
+        </ul>
+
+        <h4>En este caso sería: <span id="time"></span> s</h4>
+
+        <h3>Intervalo de tiempo</h3>
+        <p>
+          El intervalo de tiempo corresponde al tiempo transcurrido entre cada
+          evanto de captura. tenemos dos formas de obtenerlo:
+        </p>
+        <ol>
+          <li>Asuminedo que el intervalo corresponde a 1 segundo / 240 fps</li>
+          <li>
+            Dividiendo la duración real del video por la cantidad de datos
+          </li>
+        </ol>
+        <h3>Primer problema: los datos no vienen separados por instantes</h3>
+        <p>
+          El primer problema que nos encontramos es que los datos vienen de la
+          manera siguiente:
+        </p>
+        <p>const array = [</p>
+        <p>{x: 257, y: 607, milliseconds: 1721668233019},</p>
+        <p>{x: 321, y: 476, milliseconds: 1721668233019},</p>
+        <p>{x: 262, y: 352, milliseconds: 1721668233019},</p>
+        <p>{x: 251, y: 324, milliseconds: 1721668233019},</p>
+        <p>{x: 299, y: 318, milliseconds: 1721668233019},</p>
+        <p>{x: 257, y: 607, milliseconds: 1721668233030},</p>
+        <p>{x: 318, y: 474, milliseconds: 1721668233030},</p>
+        <p>{x: 256, y: 352, milliseconds: 1721668233030},</p>
+        <p>{x: 245, y: 324, milliseconds: 1721668233030},</p>
+        <p>{x: 293, y: 318, milliseconds: 1721668233030},</p>
+        <p>{x: 256, y: 607, milliseconds: 1721668233042},</p>
+        <p>{x: 315, y: 473, milliseconds: 1721668233042},</p>
+        <p>{x: 251, y: 352, milliseconds: 1721668233042},</p>
+        <p>{x: 240, y: 324, milliseconds: 1721668233042},</p>
+        <p>{x: 287, y: 318, milliseconds: 1721668233042}</p>
+        <p>]</p>
+
+        <p>
+          En cada instante de tiempo se capturan vatrios datos. Pero podemos ver
+          en el array anterior que los datos se pueden agrupar por su marca de
+          tiempo en grupos de a cinco. La marca de tiempo de los elementos de
+          cada grupo es identica o muy cercana.
+        </p>
+        <p>
+          Cada elemento de estos grupos corresponde a un marcador rastreado y
+          como la lectura se hace de arriba abajo y de izquierda a derecha
+          podemos indentificarlos perfectamente.
+        </p>
+        <ul>
+          <li>El primer elemento corresponde al trocanter mayor</li>
+          <li>El segundo elemento al cóndilo externo</li>
+          <li>El tercer elemento al maleolo</li>
+          <li>El cuarto al calcáneo</li>
+          <li>El quinto al quinto metatarsiano</li>
+        </ul>
+        <img src="./images/marcadores.jpg" />
+
+        <h4>Función para separar el array en grupos de a cinco</h4>
+        <p>
+          Creamos una función que separa en arreglos de a cinco. Detecta las
+          marcas de tiempo cercana y las pushea en un mismo arreglo
+        </p>
+        <pre><code>const groups = dividirEnGroups(array);</code></pre>
+        <p>
+          La funcion "dividirEnGrupos recibe el array original y genera otro
+          array con arrays de cinco objetos de la siguiente manera"
+        </p>
+        <p>const groups = [</p>
+        <p>[</p>
+        <p>{x: 330, y: 480, milliseconds: 1721683087757},</p>
+        <p>{x: 260, y: 610, milliseconds: 1721683087757},</p>
+        <p>{x: 285, y: 352, milliseconds: 1721683087757},</p>
+        <p>{x: 276, y: 324, milliseconds: 1721683087757},</p>
+        <p>{x: 325, y: 319, milliseconds: 1721683087757},</p>
+        <p>],</p>
+        <p>[</p>
+        <p>{x: 260, y: 610, milliseconds: 1721683087769},</p>
+        <p>{x: 330, y: 480, milliseconds: 1721683087769},</p>
+        <p>{x: 285, y: 352, milliseconds: 1721683087769},</p>
+        <p>{x: 276, y: 324, milliseconds: 1721683087769},</p>
+        <p>{x: 325, y: 319, milliseconds: 1721683087769},</p>
+        <p>],</p>
+        <p>[</p>
+        <p>{x: 259, y: 610, milliseconds: 1721683087782},</p>
+        <p>{x: 328, y: 479, milliseconds: 1721683087782},</p>
+        <p>{x: 280, y: 352, milliseconds: 1721683087782},</p>
+        <p>{x: 271, y: 324, milliseconds: 1721683087782},</p>
+        <p>{x: 319, y: 319, milliseconds: 1721683087782},</p>
+        <p>],</p>
+        <p>[</p>
+        <p>{x: 259, y: 610, milliseconds: 1721683087803},</p>
+        <p>{x: 328, y: 479, milliseconds: 1721683087803},</p>
+        <p>{x: 280, y: 352, milliseconds: 1721683087803},</p>
+        <p>{x: 271, y: 324, milliseconds: 1721683087803},</p>
+        <p>{x: 319, y: 319, milliseconds: 1721683087803},</p>
+        <p>]</p>
+
+        <article>
+          <h3>Segundo problema: los datos repetidos</h3>
+          <p>
+            Como se ve el "groups" tenemos datos repetidos. Esto es porque el la
+            función de rastreo puede tomar hasta dos muestras por frame. Este
+            hecho nos va a dar un error cuando ingresemos intervalos de tiempo
+            para hacer calculos en trozos de arreglo, por ejemplo en alguna
+            integración o derivación. Por eso vamos a filtrar los datos
+            repetidos.
+          </p>
+          <pre><code>const { realTime, correctedInterval, correctedGroups } = obtenerTiempoEIntervaloReal(groups, duration);</code></pre>
+          <p>
+            Esta función recibe dos parametros: el array con los grupos y la
+            duración del video
+          </p>
+          <p>
+            Y entrega tres elementos: el tiempo real del video, el intervalo
+            corregido, y los grupos sin repeticiones
+          </p>
+          <h4>Como referencias del tiempo tenemos:</h4>
+          <ol>
+            <li>
+              el intervalo corregido que es un valor único que sale de dividir
+              el tiempo real por la cantidad de datos
+            </li>
+            <li>
+              un array con los intervalos entre cada cuadro que es variable.
+            </li>
+          </ol>
+        </article>
+        <article>
+          <h3>Separar los grupos por marcador</h3>
+          <p>Este procedimiento se realiza en dos etapas:</p>
+          <ol>
+            <li>
+              Se crea una función que toma el arreglo original y separa por
+              marcador.
+            </li>
+            <p>
+              A cada arreglo del marcador se le asigna una letra griega. Esto es
+              porque originalmente se empezó con el análisis de los angulos
+            </p>
+            <ol>
+              <li>alpha para el trocanter</li>
+              <li>beta para el códilo</li>
+              <li>gamma para el maleolo</li>
+              <li>lamnda para el calcáneo</li>
+              <li>epsilon para el quinto matatarsiano</li>
+            </ol>
+            <pre><code>const { alpha, beta, gamma, lambda, epsilon } = dividirPorMarcador(array);</code></pre>
+            <li>
+              Cuando ya se tienen los grupos corregidos, se vuelven a iterar los
+              arreglos por marcador y de filtran los repetidos.
+            </li>
+            <pre><code>const { newAlpha, newBeta, newGamma, newLambda, newEpsilon } = filtrarRepetidosMarcadores(alpha, beta, gamma, lambda, epsilon, correctedGroups)</code></pre>
+          </ol>
+          <p>
+            Esto es porque resulta mas simple eliminar los repetidos de los
+            marcadores a partir de los grupos
+          </p>
+        </article>
+        <article>
+          <h3>Ángulos articulares</h3>
+          <p>
+            Una vez que tenemos cada marcador identificado y con el tiempo
+            corregido podemos obtener los ángulos
+          </p>
+          <p>Los ángulo lo calculamos con:</p>
+          <p>cos angulo = u x v / |u|*|v|</p>
+          <canvas id="angulos"></canvas>
+        </article>
+        <article>
+          <h3>Trayectoria de los marcadores</h3>
+          <p>
+            Una vez que tenemos los datos de los marcadores que como sabemos
+            tiene tres elementos: posición en x, posición en y y los
+            milisegundos, vamos a crear dos arrays por cada marcador, con las
+            posiciones en x y en y. y lo vamos a graficar
+          </p>
+          <div>
+            <div
+              id="gota"
+              style="width: 600px; height: 250px; margin-bottom: 600px"
+            ></div>
+          </div>
+        </article>
+        <article>
+          <h3>Análisis de la trayectoria</h3>
+          <h4>Índices de referencia</h4>
+          <p>
+            Para establecer un punto de partida buscamos una media estadistica
+            de la trayectoria en "y" del quinto metatarsiano
+          </p>
+          <h4>
+            La media de la trayectoria en y es de: <span id="mean"></span>
+          </h4>
+          <p>
+            Los puntos de corte entre la media y la trayectoria en y de quinto
+            determinan los índices de referencia. Al primer corte lo denominamos
+            index0 y es la referencia para comenzar el análisis. Los índices los
+            encontramos con la siguiente función:
+          </p>
+          <pre>
+          <code>const index1 = epsilonY.findIndex((el, index) =>
+                el < meanValue && index > index0);</code>
+          </pre>
+          <p>
+            En la siguiente tabla encontramos los índices, los valores en y, en
+            x y la marca de tiempo
+          </p>
+          <div class="table-container">
+            <table id="dynamicTable">
+              <thead>
+                <tr>
+                  <th>Index</th>
+                  <th>índice</th>
+                  <th>tiempo</th>
+                  <th>posición en y</th>
+                  <th>posición en x</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Filas dinámicas serán insertadas aquí -->
+              </tbody>
+            </table>
+          </div>
+          <canvas id="mean-chart"></canvas>
+          <p>
+            Para poder limitar mas el analisis generamos arrays entre los
+            indices. En este caso nos interesan los arreglos con índices
+            inferiores impares: 1-2, 3-4, 5-6, 7-8 ... que van a contener a los
+            máximos del epsilonX y corresponden al punto mas adelantado del pie.
+          </p>
+        </article>
+        <article>
+          <h3>Intervalo entre un indexImpar-indexpar</h3>
+          <p>
+            El objetivo es aislar el intervalo donde se encuentra el contacto
+            inicial y el toeoff. Para eso habiamos generado los arreglos entre
+            los índices y determinamos que estos dos momentos del ciclo se
+            encuentran entre el punto mas adelantado de la trayectoria en x del
+            quinto metatarsiano (epsiloX) y el index-par posterior.
+          </p>
+        </article>
+        <canvas id="posiciones"></canvas>
+        <p>Aislamos el segmento que se cruza</p>
+        <canvas id="derivada"></canvas>
+        <!-- <h4>Calcaneo (lamnda)</h4>
+          <p>Trayectoria del calcaneo (lambda)</p>
+          <p>
+            grafico de la derivada entre la posión máxima de x y el índice 4
+          </p> -->
+        <canvas id="derivada-lambda"></canvas>
+        <canvas id="posiciones-lambda"></canvas>
+        <h3 id="interval"></h3>
+      </section>
+
+      <div>
+        <div
+          id="tester"
+          style="width: 600px; height: 250px; margin-bottom: 600px"
+        ></div>
       </div>
-      <h3 id="time"></h3>
-      <h3 id="interval"></h3>
-      <h3 id="frames"></h3>
-      <canvas id="myChart"></canvas>
-    </div>
-    <div class="right">
-      <div id="tester" style="width: 600px; height: 250px"></div>
-    </div>
+      <div>
+        <div id="tester2" style="width: 600px; height: 250px"></div>
+      </div>
+    </main>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/numbers.js/0.7.0/numbers.min.js"></script>

@@ -39,9 +39,7 @@
             detect certain colors in a video
           </p>
         </div>
-        <div class="container">
-          <div class="timer" id="timer">00:00:000</div>
-        </div>
+
         <input type="file" id="fileInput" accept="video/*" />
         <button id="loadButton"></button>
         <button onclick="startTracking()" id="init_buton">analizar</button>
@@ -63,50 +61,8 @@
     </div>
 
     <script>
-      // --------------------- cronometro
-      let timerInterval;
-      let startTime;
-      let running = false;
-      const timerDisplay = document.getElementById("timer");
       const startButton = document.getElementById("init_buton");
       const stopButton = document.getElementById("stopButton");
-      // ingresamos la calibración
-      const pixelEnMetros = 0.0022;
-      function startTimer() {
-        if (!running) {
-          running = true;
-          startTime = Date.now();
-          timerInterval = setInterval(updateTimer, 10);
-        }
-      }
-
-      function stopTimer() {
-        if (running) {
-          running = false;
-          clearInterval(timerInterval);
-        }
-      }
-
-      function updateTimer() {
-        const elapsedTime = Date.now() - startTime;
-
-        const minutes = Math.floor(elapsedTime / (1000 * 60))
-          .toString()
-          .padStart(2, "0");
-        const seconds = Math.floor((elapsedTime % (1000 * 60)) / 1000)
-          .toString()
-          .padStart(2, "0");
-        const milliseconds = Math.floor(elapsedTime % 1000)
-          .toString()
-          .padStart(3, "0");
-        timerDisplay.textContent = `${minutes}:${seconds}:${milliseconds}`;
-        localStorage.setItem("duration", JSON.stringify(elapsedTime));
-      }
-
-      startButton.addEventListener("click", startTimer);
-      stopButton.addEventListener("click", stopTimer);
-
-      // -------------------- fin cronometro
 
       var video = document.getElementById("videoPlayer");
 
@@ -154,7 +110,7 @@
           // Leer el contenido del archivo como una URL de datos (data URL)
           reader.readAsDataURL(file);
 
-          initGUIControllers(tracker);
+          // initGUIControllers(tracker);
         }
       });
 
@@ -172,7 +128,7 @@
           }
           c = m.mediaTime;
           v.requestVideoFrameCallback(check);
-          console.log(fps);
+
           localStorage.setItem("fps", JSON.stringify(fps));
         }
         v.requestVideoFrameCallback(check);

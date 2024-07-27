@@ -106,6 +106,54 @@ export function graficoTresVariables(
     },
   });
 }
+export function graficoCuatroVariables(
+  ctx,
+  timeArray,
+  variable1,
+  variable1Name,
+  variable2,
+  variable2Name,
+  variable3,
+  variable3Name,
+  variable4,
+  variable4Name
+) {
+  new Chart(ctx, {
+    type: "line",
+    data: {
+      labels: timeArray,
+      datasets: [
+        {
+          label: variable1Name,
+          data: variable1,
+          borderWidth: 0.1,
+        },
+        {
+          label: variable2Name,
+          data: variable2,
+          borderWidth: 1,
+        },
+        {
+          label: variable3Name,
+          data: variable3,
+          borderWidth: 1,
+        },
+        {
+          label: variable4Name,
+          data: variable4,
+          borderWidth: 1,
+        },
+      ],
+    },
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true,
+        },
+      },
+    },
+  });
+}
 
 // grafico de dispersión
 
@@ -125,8 +173,8 @@ export function graficoDeDispersión(
   var layout = {
     width: 1000,
     height: 800,
-    xaxis: { range: [0, 500] },
-    yaxis: { range: [0, 800] },
+    xaxis: { range: [0, 430] },
+    yaxis: { range: [300, 700] },
   };
 
   Plotly.newPlot(
@@ -137,6 +185,7 @@ export function graficoDeDispersión(
         y: alphaY,
         type: "scatter",
         mode: "markers",
+        name: "trocanter",
         marker: {
           size: 2,
         },
@@ -146,6 +195,7 @@ export function graficoDeDispersión(
         y: betaY,
         type: "scatter",
         mode: "markers",
+        name: "cóndilo",
         marker: {
           size: 2,
         },
@@ -155,6 +205,7 @@ export function graficoDeDispersión(
         y: gammaY,
         type: "scatter",
         mode: "markers",
+        name: "maleolo",
         marker: {
           size: 1,
         },
@@ -164,6 +215,7 @@ export function graficoDeDispersión(
         y: lambdaY,
         type: "scatter",
         mode: "markers",
+        name: "calcaneo",
         marker: {
           size: 2,
         },
@@ -173,8 +225,9 @@ export function graficoDeDispersión(
         y: epsilonY,
         type: "scatter",
         mode: "markers",
+        name: "quinto m",
         marker: {
-          size: 4,
+          size: 2,
         },
       },
     ],
@@ -184,4 +237,16 @@ export function graficoDeDispersión(
       margin: { t: 0 },
     }
   );
+}
+
+export function graficoDeUnaVariable(TESTER2, dataArray, timeArray) {
+  var trace1 = {
+    x: timeArray,
+    y: dataArray,
+    type: "scatter",
+  };
+
+  var data = [trace1];
+
+  Plotly.newPlot(TESTER2, data);
 }
