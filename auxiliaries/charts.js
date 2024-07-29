@@ -83,17 +83,20 @@ export function graficoTresVariables(
         {
           label: variable1Name,
           data: variable1,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
         {
           label: variable2Name,
           data: variable2,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
         {
           label: variable3Name,
           data: variable3,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
       ],
     },
@@ -126,22 +129,26 @@ export function graficoCuatroVariables(
         {
           label: variable1Name,
           data: variable1,
-          borderWidth: 0.1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
         {
           label: variable2Name,
           data: variable2,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
         {
           label: variable3Name,
           data: variable3,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
         {
           label: variable4Name,
           data: variable4,
-          borderWidth: 1,
+          borderWidth: 3,
+          pointRadius: 0,
         },
       ],
     },
@@ -174,7 +181,7 @@ export function graficoDeDispersión(
     width: 1000,
     height: 800,
     xaxis: { range: [0, 430] },
-    yaxis: { range: [300, 700] },
+    yaxis: { range: [200, 700] },
   };
 
   Plotly.newPlot(

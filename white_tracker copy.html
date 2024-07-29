@@ -69,6 +69,7 @@
       video.addEventListener("loadedmetadata", function (event) {
         var videoWidth = event.target.videoWidth;
         var videoHeight = event.target.videoHeight;
+        // fps = this.duration;
 
         localStorage.setItem("videoWidth", JSON.stringify(videoWidth));
         localStorage.setItem("videoHeight", JSON.stringify(videoHeight));
@@ -155,8 +156,11 @@
             trackingTask.stop();
           });
 
+        // tracking.track("#videoPlayer", tracker);
         const array = [];
         const init = document.getElementById("init_buton");
+        let xArray = [];
+        let yArray = [];
 
         let yPositionInnit = 0;
         let yPositionInnitState = false;
@@ -165,27 +169,99 @@
           var videoWidth = JSON.parse(localStorage.getItem("videoWidth"));
           var videoHeight = JSON.parse(localStorage.getItem("videoHeight"));
           context.clearRect(0, 0, videoWidth, videoHeight);
+          // context.clearRect(0, 0, canvas.width, canvas.height);
           event.data.forEach(function (rect) {
+            // capturar primer valor de y
+            // if (!yPositionInnitState) {
+            //   yPositionInnit = rect.y;
+            //   console.log("Primer valor ingresado:", yPositionInnit);
+            //   yPositionInnitState = true;
+            // }
+
+            // --------------------------
+
+            // if (rect.color === "custom") {
+            //   rect.color = tracker.customColor;
+            // }
+
+            // xArray.push(rect.x * pixelEnMetros);
+            // yArray.push((videoHeight - rect.y) * pixelEnMetros);
+            // if (xArray.length > 500) {
+            //   xArray.shift();
+            //   yArray.shift();
+            // }
+
+            // const arrayTime = [];
+            // arrayTime.push(Date.now());
             array.push({
               x: rect.x,
               y: videoHeight - rect.y,
               milliseconds: Date.now(),
-              xr: videoWidth - rect.x,
             });
 
             localStorage.setItem("array", JSON.stringify(array));
+            // localStorage.setItem("arrayTime", JSON.stringify(arrayTime));
 
             context.strokeStyle = rect.color;
+
             context.strokeRect(rect.x, rect.y, rect.width, rect.height);
             context.font = "11px Helvetica";
             context.fillStyle = "#fff";
+            // context.fillText(
+            //   "x: " + rect.x.toFixed(2),
+            //   rect.x + rect.width + 5,
+            //   rect.y + 11
+            // );
+            // context.fillText(
+            //   "y: " + (videoHeight - rect.y).toFixed(2),
+            //   rect.x + rect.width + 5,
+            //   rect.y + 22
+            // );
+            // context.fillText(
+            //   "color: " + rect.color,
+            //   rect.x + rect.width + 5,
+            //   rect.y + 36
+            // );
           });
+
+          // var layout = {
+          //   width: 700,
+          //   height: videoHeight,
+          //   xaxis: { range: [0.2, 0.9] },
+          //   yaxis: { range: [0.25, 1.7] },
+          //   plot_bgcolor: "#000",
+          //   paper_bgcolor: "#000",
+          //   color: "#fff",
+          // };
+          // TESTER = document.getElementById("tester");
+
+          // Plotly.newPlot(
+          //   TESTER,
+          //   [
+          //     {
+          //       x: xArray,
+          //       y: yArray,
+          //       type: "scatter",
+          //       mode: "markers",
+          //       marker: {
+          //         size: 5,
+          //         color: "#5efa0a",
+          //       },
+          //     },
+          //   ],
+          //   layout,
+
+          //   {
+          //     margin: { t: 0 },
+          //   }
+          // );
         });
       };
       const stopTracking = () => {
         const trackingTask = tracking.track("#videoPlayer", tracker);
         trackingTask.stop();
       };
+      // window.onload = function () {};
     </script>
   </body>
 </html>

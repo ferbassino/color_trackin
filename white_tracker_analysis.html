@@ -52,13 +52,14 @@
     th,
     td {
       padding: 10px;
-      text-align: left;
+      text-align: center;
       border-bottom: 1px solid #ddd;
     }
 
     th {
       background-color: #f8f8f8;
       font-weight: bold;
+      text-align: center;
     }
 
     tr:nth-child(even) {
@@ -179,6 +180,18 @@
             Dividiendo la duración real del video por la cantidad de datos
           </li>
         </ol>
+        <h3>Lado de la captura</h3>
+        <p>
+          El video se puede cargar con una vista derecha o izquierda. El objeto
+          de la captura tiene un cuarto parametro "xr" que seria los datos en x
+          invertidos. En el caso de detectarse que los valores de x durante el
+          apoyo del primer ciclo van de izquierda a derecha se aplica inversa a
+          que si los datos van de derecha a izauierda
+        </p>
+        <h4>
+          En este caso se cargó un video con una vista:
+          <span id="vista-video"></span>
+        </h4>
         <h3>Primer problema: los datos no vienen separados por instantes</h3>
         <p>
           El primer problema que nos encontramos es que los datos vienen de la
@@ -405,16 +418,94 @@
             encuentran entre el punto mas adelantado de la trayectoria en x del
             quinto metatarsiano (epsiloX) y el index-par posterior.
           </p>
+          <p>
+            En el gáfico vemos el intervalo que comienza en rojo con el máximo
+            en x (rojo) y finaliza en el index par posterior (el cruce entre la
+            media y la trayectoria en y del quinto).
+          </p>
+          <canvas id="posiciones"></canvas>
         </article>
-        <canvas id="posiciones"></canvas>
-        <p>Aislamos el segmento que se cruza</p>
-        <canvas id="derivada"></canvas>
+        <article>
+          <h3>Derivadas en x y y</h3>
+          <p>
+            Ahora derivamos las trayectorias en x e y del intervalo anterior
+          </p>
+          <p>
+            El objetivo es ver el comportamiento de la velocidad de la
+            trayectoria y detectar el tiempo de apoyo, el contacto inicial y el
+            toeoff. Para el despegue tomamos el quinto metatarsiano y para el
+            contacto inicial el quinto o el taón segun sea el tipo
+          </p>
+          <p>
+            Velocidad en y: la velocidad de este marcador durante el apoyo es
+            cero
+          </p>
+          <p>
+            Velocidad en x: la velocidad es constante durante el apoyo en la
+            carrera sobre una cinta
+          </p>
+          <p>
+            En el gráfico vemos la derivada de las posiciones del intervalo
+            anterior
+          </p>
+
+          <canvas id="derivada"></canvas>
+        </article>
+        <article>
+          <h3>Toe off</h3>
+          <p>
+            Consideramos el despegue como el punto donde la velocidad en x del
+            quinto termina de ser constante y comienza una pendiente positiva.
+          </p>
+        </article>
+        <article>
+          <h3>Contacto inicial</h3>
+          <p>
+            En el gráfico de derivadas vemos que la velocidad de los marcadores
+            es la misma y en un instante comienzan a separarse. La velocidad en
+            y se va a hacer cero y en x constante.
+          </p>
+          <p>
+            Consideramos el contacto inicial como el momento en que las
+            trayectorias se separan mas de 200 px/s
+          </p>
+          <p>
+            En el caso de tener contacto de talón se analiza los marcadores de
+            calcaneo (lambda), y en el caso de tener contacto inicial se analiza
+            el marcador de quinto metatarsiano (epsilon).
+          </p>
+          <canvas id="derivada-lambda"></canvas>
+        </article>
+        <article>
+          <h3>Tiempo de contacto</h3>
+          <p>
+            Para obtener el timepo de contacto realizamos la resta entre
+            contacto inicial y el toeoff
+          </p>
+          <p>imprimimos los datos en una tabla:</p>
+          <div class="table-container">
+            <table id="contact">
+              <thead>
+                <tr>
+                  <th>Ciclo</th>
+                  <th>Contacto inicial</th>
+                  <th>Toeoff</th>
+                  <th>Tiempo de contacto</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Filas dinámicas serán insertadas aquí -->
+              </tbody>
+            </table>
+          </div>
+        </article>
+
         <!-- <h4>Calcaneo (lamnda)</h4>
           <p>Trayectoria del calcaneo (lambda)</p>
           <p>
             grafico de la derivada entre la posión máxima de x y el índice 4
           </p> -->
-        <canvas id="derivada-lambda"></canvas>
+
         <canvas id="posiciones-lambda"></canvas>
         <h3 id="interval"></h3>
       </section>

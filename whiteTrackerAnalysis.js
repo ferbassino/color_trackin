@@ -177,6 +177,16 @@ intervalo.textContent = `Intervalo de tiempo: ${Number(
   correctedInterval.toFixed(4)
 )} s`;
 
+// de la vista del video:
+let ladoVista = "";
+if (alpha[0].x - alpha[10].x < 0) {
+  ladoVista = "izquierda";
+} else {
+  ladoVista = "derecha";
+}
+const vistaVideo = document.getElementById("vista-video");
+console.log(vistaVideo);
+vistaVideo.textContent = ladoVista;
 // ---------------- fin inserciones en el html ---------------
 
 // ---------------------------- FIN TIEMPO ---------------------
@@ -232,7 +242,7 @@ graficoDeDispersión(
 const epsilonYMax = Math.max(...epsilonY);
 const epsilonYMin = Math.min(...epsilonY);
 
-const meanValue = (epsilonYMax - epsilonYMin) / 2 + epsilonYMin;
+const meanValue = (epsilonYMax + 50 - epsilonYMin) / 2 + epsilonYMin;
 const meanSpan = document.getElementById("mean");
 const meanChart = document.getElementById("mean-chart");
 
@@ -290,8 +300,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-const index0 = epsilonY.findIndex((el, index) => el > meanValue);
-
 // función para encontrar los índices
 
 // Como el contacto inicial se va a encontrar despues del punto mas anterior de la trayectoria de epsilonx , vamos a generar arrays posteriores a los index impares. primero creamos un array con los index impares
@@ -339,9 +347,11 @@ crossings.map((element, index) => {
   lambdaYIndexesArraysIndex.push(lYarrayIndex);
   lambdaXIndexesArraysIndex.push(lXarrayIndex);
 });
-// console.log(epsilonXIndexesArraysIndex);
 
-// guardar en un arreglo solo los máximos de los impares. se genera un arreglo con objetos: cada objeto es un arreglo impar con tres elementos: el indice original de los arrays entre indices, el indice local, y el máximo
+// Arreglos entre el x maximo y el indice par siguiente
+
+// generamos dos arreglos : uno con todos los ciclos y otro solo con los impares. se genera un arreglo con objetos: cada objeto es un arreglo impar con cuatro elementos: el indice propio del arreglo que se está generando de los arrays entre indices, el indice local, el índice en el array y el máximo
+
 const maxEpsilonXOdd = [];
 
 // epsilonXIndexesArrays.map((el, index) => {
@@ -382,142 +392,228 @@ epsilonXIndexesArrays.map((el, index) => {
   });
 });
 
+// para graficar un ejemplo de intervalo entre el maximo y el par posterior
+
+console.log(maxEpsilonXOddIndex2);
+console.log(crossings);
+const chartXmaxXtoEven = [];
+const chartXmaxYtoEven = [];
+const chartXmaxYtoEvenTime = [];
+
+epsilonX.map((el, index) => {
+  if (index > maxEpsilonXOddIndex2[1].currentIndex && index < crossings[2]) {
+    chartXmaxXtoEven.push(el);
+    chartXmaxYtoEven.push(epsilonY[index]);
+    chartXmaxYtoEvenTime.push(intervalSecondsRealArray[index]);
+  }
+});
+const posiciones = document.getElementById("posiciones");
+graficoTresVariables(
+  posiciones,
+  chartXmaxYtoEvenTime,
+  chartXmaxYtoEven,
+  "Trayectoria en y quinto",
+  chartXmaxXtoEven,
+  "Trayectoria en x quinto",
+  meanArray,
+  "mean value"
+);
+// fin grafico xmax par
+
+// DERIVADA
+// Cálculo de la derivada las trayectorias para determinar toeoff y contacto inicial. primero vamos a obtener el intervalo entre el máximo de x y el index par posterior.
+
+// recordemos como viene el arreglo con los objetos donde tenemos los maximos maxEpsilonXOddIndex2:
+
+// 1 : {
+//   currentIndex: 151, Es el indice donde se encuentra el maximo
+//   index: 1, es el indice del objeto
+//   localIndex: 50, es el indice local, el que tiene el máximo dentro de el array del ciclo
+//   x: 419: es el valor máximo del ciclo
+// };
+
 const xMaxToEven = [];
+const yMaxToEven = [];
+const xMaxToEvenLambda = [];
+const yMaxToEvenLambda = [];
 const xMaxToEvenDerivada = [];
+const yMaxToEvenDerivada = [];
+const xMaxToEvenDerivadaLambda = [];
+const yMaxToEvenDerivadaLambda = [];
+
+// itermos maxEpsilonXOddIndex2 y dentro de este crossings que tiene los cruces e indica los indices. Aprovechamos  el mapeo tambien para derivar
+
 maxEpsilonXOddIndex2.map((el, index) => {
   const currentArray = [];
+  const currentYArray = [];
+  const currentArrayLambda = [];
+  const currentYArrayLambda = [];
   if (index % 2 !== 0) {
     epsilonX.map((element, i) => {
       if (i > el.currentIndex && i < crossings[index + 1]) {
         currentArray.push(element);
       }
     });
+    epsilonY.map((element, i) => {
+      if (i > el.currentIndex && i < crossings[index + 1]) {
+        currentYArray.push(element);
+      }
+    });
+    lambdaX.map((element, i) => {
+      if (i > el.currentIndex && i < crossings[index + 1]) {
+        currentArrayLambda.push(element);
+      }
+    });
+    lambdaY.map((element, i) => {
+      if (i > el.currentIndex && i < crossings[index + 1]) {
+        currentYArrayLambda.push(element);
+      }
+    });
     xMaxToEvenDerivada.push(derivada(currentArray, correctedInterval));
+    yMaxToEvenDerivada.push(derivada(currentYArray, correctedInterval));
+    xMaxToEvenDerivadaLambda.push(
+      derivada(currentArrayLambda, correctedInterval)
+    );
+    yMaxToEvenDerivadaLambda.push(
+      derivada(currentYArrayLambda, correctedInterval)
+    );
+    // xMaxToEvenDerivada.push(
+    //   savitzkyGolay(derivada(currentArray, correctedInterval), 3, 2)
+    // );
     xMaxToEven.push(currentArray);
+    yMaxToEven.push(currentYArray);
+    xMaxToEvenLambda.push(currentArrayLambda);
+    yMaxToEvenLambda.push(currentYArrayLambda);
   }
 });
-const timeDerivada = [];
-xMaxToEvenDerivada.map((el, index) => {
-  timeDerivada.push(getTimeArray(el, correctedInterval));
-});
 
-console.log(xMaxToEvenDerivada);
-console.log(xMaxToEven);
-console.log(maxEpsilonXOddIndex);
+// grafico de la derivada
+const graficoDerivada = document.getElementById("derivada");
+// const ctx2 = document.getElementById("myChart2");
 
+graficoDosVariables(
+  graficoDerivada,
+  chartXmaxYtoEvenTime,
+  xMaxToEvenDerivada[0],
+  "Derivada x",
+  yMaxToEvenDerivada[0],
+  "Derivada y"
+);
 // toeoff
 
 // ----------- ANÁLISIS DE LA DERIVADA / TOE OFF Y CI
 
-// la función obtiene  la mediana de la derivada que va a estar próximo a 0 y luego capturamos el primer valor de la curva ascendente que corresponde al toeoff
 const toeOffLocalIndex = [];
 
+// para el toeoff primero buscamos el instante ddonde deja de ser contante la velocidad en x y determinamos un indice local dentro del array que itera
 xMaxToEvenDerivada.map((el) =>
   toeOffLocalIndex.push(obtenerIndexRamaAscendente(el))
 );
 
+// ahora con el indice local  obtenemos el índice en el array general
 const toeOffIndex = [];
 maxEpsilonXOddIndex.map((el, index) => {
-  console.log(toeOffLocalIndex[index], el.currentIndex);
   toeOffIndex.push(toeOffLocalIndex[index] + el.currentIndex);
 });
 
-console.log(toeOffIndex);
-toeOffIndex.map((el, index) => console.log(intervalSecondsRealArray[el]));
-// ahora buscamos el contacto inicial que seria el primer valor igual a la mediana + - 20 y que tenga los 10 valores anteriores que sean menores
-console.log(intervalSecondsRealArray[323]);
-// const initialContactIndex = derivadaY.findIndex(
-//   (el, index) =>
-//     el < median &&
-//     el > derivadaY[index - 1] &&
-//     el > derivadaY[index - 3] &&
-//     el > derivadaY[index - 5] &&
-//     el > derivadaY[index - 7] &&
-//     el > derivadaY[index - 9] &&
-//     el > derivadaY[index - 10]
-// );
+// y con el indice en el array general obtenemos el instante del despegue
 
-// obtenemos el indice del array original mediante la suma de el toeOffIndex + x12maxIndex + index 1
+// creamos un array con los tiempos de toeofff
 
-const posiciones = document.getElementById("posiciones");
-// graficoDosVariables(
-//   posiciones,
-//   intervalSecondsRealArray,
-//   epsilonY,
-//   "Trayectoria en y quinto",
-//   lambdaY,
-//   "Trayectoria en y talon"
-// );
+const toeoffTime = toeOffIndex.map((el, index) => intervalSecondsRealArray[el]);
+console.log("toe off time", toeoffTime);
 
-// graficoCuatroVariables(
-//   posiciones,
-//   intervalSecondsRealArray,
-//   epsilonY,
-//   "Trayectoria en y",
-//   epsilonX,
-//   "Trayectoria en x",
-//   lambdaY,
-//   "trayectoria talon y",
-//   lambdaX,
-//   "trayectoria talonx"
-// );
-// const posicionesLambda = document.getElementById("posiciones-lambda");
-// graficoDosVariables(
-//   posicionesLambda,
-//   intervalSecondsRealArray,
-//   lambdaY,
-//   "Trayectoria en y",
-//   lambdaX,
-//   "Trayectoria en x"
-// );
+// ahora teniendo el contacto inicial y el toeoff calculamos el tiempo de contacto restando los dos instantes
 
-// ahora buscamos el contacto inicial que seria el primer valor igual a la mediana + - 20 y que tenga los 10 valores anteriores que sean menores
+// CONTACTO INICIAL
 
 // grafico de la derivada lambda
 const graficoDerivadaLambda = document.getElementById("derivada-lambda");
-// const ctx2 = document.getElementById("myChart2");
-
-// ----------- fin  segundo ciclo
-// -------------  GRAFICOS -----------------
-
-const graficoDerivada = document.getElementById("derivada");
-// const ctx2 = document.getElementById("myChart2");
-
-graficoCuatroVariables(
-  graficoDerivada,
-  timeDerivada[0],
-  xMaxToEvenDerivada[0],
-  "",
-  xMaxToEvenDerivada[1],
-  "",
-  xMaxToEvenDerivada[3],
-  "",
-  xMaxToEvenDerivada[4],
-  ""
+graficoDosVariables(
+  graficoDerivadaLambda,
+  chartXmaxYtoEvenTime,
+  xMaxToEvenDerivadaLambda[0],
+  "Derivada x Lambda",
+  yMaxToEvenDerivadaLambda[0],
+  "Derivada y Lambda"
 );
-// graficoDosVariables(
-//   ctx,
-//   arrayTimeDerivada34,
-//   derivadaY34,
-//   "derivadaY",
-//   derivadaX34,
-//   "derivadaX"
-// );
 
-// graficoUnaVariable(ctx, derivadaYTimeArray, derivadaX34, "derivadaY");
+//  Consideramos el contacto inicial como el momento en que las trayectorias se separan mas de 200 px/s
 
-// graficoCuatroVariables(
-//   ctx,
-//   intervalSecondsRealArray,
-//   hipAngle,
-//   "epsilonY",
-//   kneeAngle,
-//   "LamndaY",
-//   ankleAngle,
-//   "epsilonX"
-//   // lambdaX,
-//   // "lamndaX"
-// );
+// entonces restamos las derivadas, en este caso de lambda porque es contacto inicial
+
+const maxToEvenDerivadaLambdaSubstraction = [];
+xMaxToEvenDerivadaLambda.map((el, i) => {
+  const array = [];
+  el.map((element, index) => {
+    array.push(
+      yMaxToEvenDerivadaLambda[i][index] - xMaxToEvenDerivadaLambda[i][index]
+    );
+  });
+  maxToEvenDerivadaLambdaSubstraction.push(array);
+});
+
+// ahora buscamos el indice donde la diferencia es mayor a 200px
+
+const derivadaSubstractionLambda = [];
+
+maxToEvenDerivadaLambdaSubstraction.map((el) =>
+  derivadaSubstractionLambda.push(el.findIndex((el) => el > 200))
+);
+
+// ahora derivadaSubstractionLambda tiene los índices locales, o sea a partir de x max de contacto inicial con talon (lambda)
+
+const initialContactIndex = [];
+maxEpsilonXOddIndex.map((el, index) => {
+  initialContactIndex.push(derivadaSubstractionLambda[index] + el.currentIndex);
+});
+
+// y con el indice en el array general obtenemos el instante del despegue
+
+// creamos un array con los tiempos de toeofff
+console.log(initialContactIndex);
+const initialContactTime = initialContactIndex.map(
+  (el, index) => intervalSecondsRealArray[el]
+);
+console.log("toe off time", initialContactTime);
+
+// tenemos que encontrar a que tiempo corresponde para saber el contacto inicial y el tiempo de concacto
+console.log(initialContactTime, toeoffTime);
+const contactTime = toeoffTime.map((el, index) =>
+  Number((el - initialContactTime[index]).toFixed(4))
+);
+
+// inserción en el dom de los datos de contacto
+const dataTableContact = [];
+// const indexesArray = [];
+
+toeoffTime.map((el, index) => {
+  dataTableContact.push([
+    `ciclo ${index + 1}`,
+    `${initialContactTime[index]} s`,
+    `${toeoffTime[index]} s`,
+    `${contactTime[index]} s`,
+  ]);
+});
+
+document.addEventListener("DOMContentLoaded", function () {
+  const tbody = document.querySelector("#contact tbody");
+
+  dataTableContact.forEach((rowData) => {
+    const row = document.createElement("tr");
+
+    rowData.forEach((cellData) => {
+      const cell = document.createElement("td");
+      cell.textContent = cellData;
+      row.appendChild(cell);
+    });
+
+    tbody.appendChild(row);
+  });
+});
+
+// const ctx2 = document.getElementById("myChart2");
+
 const TESTER = document.getElementById("tester");
 
 // graficoDeDispersión(

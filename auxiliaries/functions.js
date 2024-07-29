@@ -144,53 +144,106 @@ export function obtenerAngulos(alpha, beta, gamma, lambda, epsilon) {
   const ankleAngle = [];
 
   for (let index = 0; index < alpha.length - 1; index++) {
-    kneeAngle.push(
-      (Math.acos(
-        ((beta[index].x - alpha[index].x) * (gamma[index].x - beta[index].x) +
-          (beta[index].y - alpha[index].y) * (gamma[index].y - beta[index].y)) /
-          (Math.sqrt(
-            Math.pow(alpha[index].x - beta[index].x, 2) +
-              Math.pow(alpha[index].y - beta[index].y, 2)
-          ) *
-            Math.sqrt(
-              Math.pow(beta[index].x - gamma[index].x, 2) +
-                Math.pow(beta[index].y - gamma[index].y, 2)
-            ))
-      ) *
-        180) /
-        Math.PI
-    );
-    ankleAngle.push(
-      (Math.acos(
-        ((epsilon[index].x - lambda[index].x) *
-          (gamma[index].x - beta[index].x) +
-          (epsilon[index].y - lambda[index].y) *
-            (gamma[index].y - beta[index].y)) /
-          (Math.sqrt(
-            Math.pow(epsilon[index].x - lambda[index].x, 2) +
-              Math.pow(epsilon[index].y - lambda[index].y, 2)
-          ) *
-            Math.sqrt(
-              Math.pow(beta[index].x - gamma[index].x, 2) +
-                Math.pow(beta[index].y - gamma[index].y, 2)
-            ))
-      ) *
-        180) /
-        Math.PI
-    );
+    if (alpha[0].x - alpha[10].x < 0) {
+      kneeAngle.push(
+        (Math.acos(
+          ((beta[index].xr - alpha[index].xr) *
+            (gamma[index].xr - beta[index].xr) +
+            (beta[index].y - alpha[index].y) *
+              (gamma[index].y - beta[index].y)) /
+            (Math.sqrt(
+              Math.pow(alpha[index].xr - beta[index].xr, 2) +
+                Math.pow(alpha[index].y - beta[index].y, 2)
+            ) *
+              Math.sqrt(
+                Math.pow(beta[index].xr - gamma[index].xr, 2) +
+                  Math.pow(beta[index].y - gamma[index].y, 2)
+              ))
+        ) *
+          180) /
+          Math.PI
+      );
+      ankleAngle.push(
+        (Math.acos(
+          ((epsilon[index].xr - lambda[index].xr) *
+            (gamma[index].xr - beta[index].xr) +
+            (epsilon[index].y - lambda[index].y) *
+              (gamma[index].y - beta[index].y)) /
+            (Math.sqrt(
+              Math.pow(epsilon[index].xr - lambda[index].xr, 2) +
+                Math.pow(epsilon[index].y - lambda[index].y, 2)
+            ) *
+              Math.sqrt(
+                Math.pow(beta[index].xr - gamma[index].xr, 2) +
+                  Math.pow(beta[index].y - gamma[index].y, 2)
+              ))
+        ) *
+          180) /
+          Math.PI
+      );
 
-    hipAngle.push(
-      ((Math.asin(
-        (alpha[index].x - beta[index].x) /
-          Math.sqrt(
-            Math.pow(alpha[index].x - beta[index].x, 2) +
-              Math.pow(alpha[index].y - beta[index].y, 2)
-          )
-      ) *
-        180) /
-        Math.PI) *
-        -1
-    );
+      hipAngle.push(
+        ((Math.asin(
+          (alpha[index].xr - beta[index].xr) /
+            Math.sqrt(
+              Math.pow(alpha[index].xr - beta[index].xr, 2) +
+                Math.pow(alpha[index].y - beta[index].y, 2)
+            )
+        ) *
+          180) /
+          Math.PI) *
+          -1
+      );
+    } else {
+      kneeAngle.push(
+        (Math.acos(
+          ((beta[index].x - alpha[index].x) * (gamma[index].x - beta[index].x) +
+            (beta[index].y - alpha[index].y) *
+              (gamma[index].y - beta[index].y)) /
+            (Math.sqrt(
+              Math.pow(alpha[index].x - beta[index].x, 2) +
+                Math.pow(alpha[index].y - beta[index].y, 2)
+            ) *
+              Math.sqrt(
+                Math.pow(beta[index].x - gamma[index].x, 2) +
+                  Math.pow(beta[index].y - gamma[index].y, 2)
+              ))
+        ) *
+          180) /
+          Math.PI
+      );
+      ankleAngle.push(
+        (Math.acos(
+          ((epsilon[index].x - lambda[index].x) *
+            (gamma[index].x - beta[index].x) +
+            (epsilon[index].y - lambda[index].y) *
+              (gamma[index].y - beta[index].y)) /
+            (Math.sqrt(
+              Math.pow(epsilon[index].x - lambda[index].x, 2) +
+                Math.pow(epsilon[index].y - lambda[index].y, 2)
+            ) *
+              Math.sqrt(
+                Math.pow(beta[index].x - gamma[index].x, 2) +
+                  Math.pow(beta[index].y - gamma[index].y, 2)
+              ))
+        ) *
+          180) /
+          Math.PI
+      );
+
+      hipAngle.push(
+        ((Math.asin(
+          (alpha[index].x - beta[index].x) /
+            Math.sqrt(
+              Math.pow(alpha[index].x - beta[index].x, 2) +
+                Math.pow(alpha[index].y - beta[index].y, 2)
+            )
+        ) *
+          180) /
+          Math.PI) *
+          -1
+      );
+    }
   }
   return { hipAngle, kneeAngle, ankleAngle };
 }
@@ -198,48 +251,96 @@ export function obtenerAngulos(alpha, beta, gamma, lambda, epsilon) {
 // funcion para obtener los puntos en x y y de cada marcador
 // console.log(alpha, beta, gamma, lambda, epsilon);
 export function gota(alpha, beta, gamma, lambda, epsilon) {
-  const alphaX = [];
-  const alphaY = [];
-  alpha.map((el) => {
-    alphaX.push(el.x);
-    alphaY.push(el.y);
-  });
-  const betaX = [];
-  const betaY = [];
-  beta.map((el) => {
-    betaX.push(el.x);
-    betaY.push(el.y);
-  });
-  const gammaX = [];
-  const gammaY = [];
-  gamma.map((el) => {
-    gammaX.push(el.x);
-    gammaY.push(el.y);
-  });
-  const lambdaX = [];
-  const lambdaY = [];
-  lambda.map((el) => {
-    lambdaX.push(el.x);
-    lambdaY.push(el.y);
-  });
-  const epsilonX = [];
-  const epsilonY = [];
-  epsilon.map((el) => {
-    epsilonX.push(el.x);
-    epsilonY.push(el.y);
-  });
-  return {
-    alphaX,
-    alphaY,
-    betaX,
-    betaY,
-    gammaX,
-    gammaY,
-    lambdaX,
-    lambdaY,
-    epsilonX,
-    epsilonY,
-  };
+  console.log(alpha[0].x - alpha[10].x);
+
+  if (alpha[0].x - alpha[10].x < 0) {
+    console.log("invertido");
+    const alphaX = [];
+    const alphaY = [];
+    alpha.map((el) => {
+      alphaX.push(el.xr);
+      alphaY.push(el.y);
+    });
+    const betaX = [];
+    const betaY = [];
+    beta.map((el) => {
+      betaX.push(el.xr);
+      betaY.push(el.y);
+    });
+    const gammaX = [];
+    const gammaY = [];
+    gamma.map((el) => {
+      gammaX.push(el.xr);
+      gammaY.push(el.y);
+    });
+    const lambdaX = [];
+    const lambdaY = [];
+    lambda.map((el) => {
+      lambdaX.push(el.xr);
+      lambdaY.push(el.y);
+    });
+    const epsilonX = [];
+    const epsilonY = [];
+    epsilon.map((el) => {
+      epsilonX.push(el.xr);
+      epsilonY.push(el.y);
+    });
+    return {
+      alphaX,
+      alphaY,
+      betaX,
+      betaY,
+      gammaX,
+      gammaY,
+      lambdaX,
+      lambdaY,
+      epsilonX,
+      epsilonY,
+    };
+  } else {
+    const alphaX = [];
+    const alphaY = [];
+    alpha.map((el) => {
+      alphaX.push(el.x);
+      alphaY.push(el.y);
+    });
+    const betaX = [];
+    const betaY = [];
+    beta.map((el) => {
+      betaX.push(el.x);
+      betaY.push(el.y);
+    });
+    const gammaX = [];
+    const gammaY = [];
+    gamma.map((el) => {
+      gammaX.push(el.x);
+      gammaY.push(el.y);
+    });
+    const lambdaX = [];
+    const lambdaY = [];
+    lambda.map((el) => {
+      lambdaX.push(el.x);
+      lambdaY.push(el.y);
+    });
+    const epsilonX = [];
+    const epsilonY = [];
+    epsilon.map((el) => {
+      epsilonX.push(el.x);
+      epsilonY.push(el.y);
+    });
+    return {
+      alphaX,
+      alphaY,
+      betaX,
+      betaY,
+      gammaX,
+      gammaY,
+      lambdaX,
+      lambdaY,
+      epsilonX,
+      epsilonY,
+    };
+  }
 }
 
 // funcion para pasar de array con datos continuos a discretos
