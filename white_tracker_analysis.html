@@ -65,6 +65,10 @@
     tr:nth-child(even) {
       background-color: #f2f2f2;
     }
+    #rearfoot,
+    #midfoot {
+      display: none; /* Ocultar ambos artículos inicialmente */
+    }
   </style>
   <body>
     <nav class="menu">
@@ -448,8 +452,6 @@
             En el gráfico vemos la derivada de las posiciones del intervalo
             anterior
           </p>
-
-          <canvas id="derivada"></canvas>
         </article>
         <article>
           <h3>Toe off</h3>
@@ -457,6 +459,11 @@
             Consideramos el despegue como el punto donde la velocidad en x del
             quinto termina de ser constante y comienza una pendiente positiva.
           </p>
+          <p>
+            Veamos las derivadas de todos los ciclos en épsilon desde el maximo
+            x hasta el index par posterior
+          </p>
+          <div id="derivada-epsilon"></div>
         </article>
         <article>
           <h3>Contacto inicial</h3>
@@ -466,15 +473,62 @@
             y se va a hacer cero y en x constante.
           </p>
           <p>
-            Consideramos el contacto inicial como el momento en que las
-            trayectorias se separan mas de 200 px/s
+            Consideramos el contacto inicial cuando las velocidades se
+            estabilizan en 0 y constante respectivamente
           </p>
           <p>
             En el caso de tener contacto de talón se analiza los marcadores de
             calcaneo (lambda), y en el caso de tener contacto inicial se analiza
             el marcador de quinto metatarsiano (epsilon).
           </p>
-          <canvas id="derivada-lambda"></canvas>
+          <article>
+            <h3>Conctacto de antepié</h3>
+            <p>Veamos que sucede cuando el CI es de antepié</p>
+            <h4>Graficamos las trayectorias en y del talon y el quinto</h4>
+            <img src="./images/lambda-epsilon-y.png" />
+            <p>Ampliemos el intervalo entre el index 1 e index 2</p>
+            <img src="./images/epsilon-lambda-y-intervalo.png" />
+            <p>
+              Vemos que en el contacto con antepié las trayectorias en el eje y
+              del talón y del antepie no se cruzan.
+            </p>
+          </article>
+          <article>
+            <h3>Contacto de talón</h3>
+            <img src="./images/talon-completo.png" />
+            <p>
+              En el contacto de talón las trayectorias en y del talón y el
+              quinto se cruzan en un mayor o menor grado. Ampliemos el
+              intervalo:
+            </p>
+            <img src="./images/talon-intervalo.png" />
+          </article>
+          <article>
+            <h4>¿que sucede en el estudio actual?:</h4>
+            <canvas id="epsilon-lambda-y"></canvas>
+          </article>
+          <!-- --------------------------------------------------- -->
+          <hr />
+          <article id="rearfoot">
+            <h3>Contacto inicial con talón</h3>
+            <div id="derivada-lambda"></div>
+            <!-- <p>ampliamos y limitamos las zonas que se cruzan</p>
+            <div id="cruces"></div>
+            <p>Derivamos los cruces</p>
+            <div id="cruces-derivados"></div> -->
+          </article>
+          <article id="midfoot">
+            <h3>El contacto es de mediopié</h3>
+            <p>ampliamos la zona de apoyo del pie</p>
+            <div id="sin-cruces"></div>
+            <p>Derivamos los cruces</p>
+            <div id="sin-cruces-derivado"></div>
+          </article>
+          <hr />
+          <!-- fin render contacto de talón -->
+
+          <!-- <div id="cruce-equis"></div> -->
+          <h4>Comportamiento en contacto de antepie y talon</h4>
         </article>
         <article>
           <h3>Tiempo de contacto</h3>
@@ -482,6 +536,7 @@
             Para obtener el timepo de contacto realizamos la resta entre
             contacto inicial y el toeoff
           </p>
+
           <p>imprimimos los datos en una tabla:</p>
           <div class="table-container">
             <table id="contact">

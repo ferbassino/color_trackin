@@ -25,15 +25,14 @@
     <nav class="navbar">
       <div class="menu">
         <a href="/index.html">Home</a>
-        <a href="/white_tracker.html">Upload Running video</a>
-        <!-- <a href="/tracking.html">Real Time</a> -->
-        <a href="/white_tracker_analysis.html">Running Analysis</a>
+        <a href="/jump_tracker.html">Upload Jump video</a>
+        <a href="/jump_analysis.html">Jump analysis</a>
       </div>
     </nav>
 
     <div>
       <div class="left">
-        <h1>Running</h1>
+        <h1>Jump</h1>
         <!-- <div class="demo-title">
           <p>
             <a href="http://trackingjs.com" target="_parent">tracking.js</a> －
@@ -55,9 +54,6 @@
             <canvas id="canvas" width="800" height="800"></canvas>
           </div>
         </div>
-        <div class="right">
-          <div id="tester" style="width: 800px; height: 800px"></div>
-        </div>
       </div>
     </div>
 
@@ -70,7 +66,8 @@
       video.addEventListener("loadedmetadata", function (event) {
         var videoWidth = event.target.videoWidth;
         var videoHeight = event.target.videoHeight;
-        console.log(videoWidth, videoHeight);
+        video.videoWidth = videoWidth;
+        video.videoHeight = videoHeight;
 
         localStorage.setItem("videoWidth", JSON.stringify(videoWidth));
         localStorage.setItem("videoHeight", JSON.stringify(videoHeight));
@@ -176,7 +173,7 @@
               xr: videoWidth - rect.x,
             });
 
-            localStorage.setItem("array", JSON.stringify(array));
+            localStorage.setItem("jump_array", JSON.stringify(array));
 
             context.strokeStyle = rect.color;
             context.strokeRect(rect.x, rect.y, rect.width, rect.height);

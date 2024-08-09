@@ -1,21 +1,28 @@
 import {
   dividirEnGroups,
   dividirPorMarcador,
-  obtenerAngulos,
   gota,
-  deDiscretoAContinuo,
-  derivada,
-  savitzkyGolay,
-  getTimeArray,
   obtenerTiempoEIntervaloReal,
   obtenerIndexRamaAscendente,
   filtrarRepetidosMarcadores,
   getIntervalRealArray,
   getSecondsIntervalRealArray,
-  getIntervalBetweenIndexes,
   findCrossingPoints,
-  obtenerImpares,
+  graficoDerivadas,
+  ladoDelVideo,
+  getMinToMax,
+  getArraysBetweenCrosess,
+  getMaxEpsilonXOddIndexes,
+  getArrayOddEvenIndexes,
+  getArrayXMaxToEven,
+  getInitialContactType,
+  getFiveElementsGroups,
+  getAverageDeleteExtremes,
+  getInitialcontact,
+  getHorizontalVector,
+  getHorizontalFootAngleArray,
 } from "./auxiliaries/functions.js";
+import { obtenerAngulos } from "./auxiliaries/angulos.js";
 import {
   graficoDeUnaVariable,
   graficoDeDispersión,
@@ -25,19 +32,6 @@ import {
 } from "./auxiliaries/charts.js";
 
 var array = JSON.parse(localStorage.getItem("array"));
-
-// ingresamos la calibración
-const pixelEnMetros = 0.0022;
-
-const data = {
-  datasets: [
-    {
-      label: "Scatter Dataset",
-      data: array,
-      backgroundColor: "rgb(255, 99, 132)",
-    },
-  ],
-};
 
 // datos que vienen con la captura e imprimimos
 var fps = JSON.parse(localStorage.getItem("fps"));
@@ -76,7 +70,14 @@ const groups = dividirEnGroups(array);
   { x: 384, y: 310, milliseconds: 1719446522955 },
   { x: 447, y: 309, milliseconds: 1719446522955 },
 ];
+console.log(groups);
 
+// llega un momento en el traqueo que los tiempos son mas largos y no permiten diferenciar los grupos, el length se hace mas corto. entonces creamos una funcion para crear un arreglo solo con los grupos que tienen cinco elementos
+
+// función para eliminar los grupos con menos de 5 elementos
+
+const fiveElementsGroups = getFiveElementsGroups(groups);
+console.log("fiveelement", fiveElementsGroups);
 // -------------  CREAR ARRAYS POR MARCADOR  --------------------
 
 // creamos una función que agrupa por marcadores, nos va a dar cinco arreglos con objetos pero por marcador, los arreglos son
@@ -95,19 +96,10 @@ const { alpha, beta, gamma, lambda, epsilon } = dividirPorMarcador(array);
 // la cantidad de mustras capturadas por el listener está representada por el length del array groups, pero como dispara antes hay valores repetidos. creamos un ciclo para obtener un length real que se aproxime a los 240 cuadros
 
 // función que obtiene el tiempo real del video evaluado y el intervalo a 240 cuadros. la función elimina grupos repetidos, tambien devuelve el array de grupos sin la repeticiones
+console.log(fiveElementsGroups);
 
 const { realTime, correctedInterval, correctedGroups } =
-  obtenerTiempoEIntervaloReal(groups, duration);
-
-// const timeArray = [];
-// let timeCount = 0;
-// for (let i = 0; i < correctedGroups.length - 1; i++) {
-//   timeArray.push(
-//     (timeCount +=
-//       correctedGroups[i + 1][0].milliseconds -
-//       correctedGroups[i][0].milliseconds) / 1000
-//   );
-// }
+  obtenerTiempoEIntervaloReal(fiveElementsGroups, duration);
 
 // una vez que tenemos corregidos los grupos vamos a usar el length de este para igualarlo al length de los arrays de los marcadores, o sea que alpha, beta, gamma, etc no tengan valores repetidos
 
@@ -137,8 +129,6 @@ const intervalSecondsRealArray = getSecondsIntervalRealArray(
 );
 // const arrayBetweenIndexes = getIntervalBetweenIndexes(10, 20);
 
-// eliminar esta
-const arrayTiempoNews = getTimeArray(newAlpha, correctedInterval);
 // -------------  ANGULOS DE LAS ARTICULACIONES  --------------------
 
 // calculo de los angulos a través del producto escalar: coseno del angulo igual a la division entre el producto escalar y el producto de los módulos
@@ -178,14 +168,9 @@ intervalo.textContent = `Intervalo de tiempo: ${Number(
 )} s`;
 
 // de la vista del video:
-let ladoVista = "";
-if (alpha[0].x - alpha[10].x < 0) {
-  ladoVista = "izquierda";
-} else {
-  ladoVista = "derecha";
-}
+
+const ladoVista = ladoDelVideo(alpha);
 const vistaVideo = document.getElementById("vista-video");
-console.log(vistaVideo);
 vistaVideo.textContent = ladoVista;
 // ---------------- fin inserciones en el html ---------------
 
@@ -207,9 +192,6 @@ const {
   epsilonY,
 } = gota(newAlpha, newBeta, newGamma, newLambda, newEpsilon);
 
-// array de tiempo para todos los valores de las gotas
-
-const arrayTiempoGota = getTimeArray(alphaX, 0.004);
 // grafico gota
 
 const graficoGota = document.getElementById("gota");
@@ -229,20 +211,12 @@ graficoDeDispersión(
 );
 // -------------------- fin gota
 
-// const alphaY0 = [];
-// const alphaYFirstValue = alphaY[0];
-// alphaY.map((el) => {
-//   alphaY0.push(el - alphaYFirstValue);
-// });
-
 // --- ANALISIS GOTA MARCADOR 5° METATARSIANO (EPSILON): TOEOFF / CI ----
 
-// 1. buscamos el maximo y el mínimo para luego obtener la media y que nos de un valor aproximadamente que corte por la mitad de la curva
+// 1. buscamos el maximo y el mínimo para luego obtener la media y que nos de un valor aproximadamente que corte por la mitad de la curva.
 
-const epsilonYMax = Math.max(...epsilonY);
-const epsilonYMin = Math.min(...epsilonY);
+const meanValue = getMinToMax(epsilonY);
 
-const meanValue = (epsilonYMax + 50 - epsilonYMin) / 2 + epsilonYMin;
 const meanSpan = document.getElementById("mean");
 const meanChart = document.getElementById("mean-chart");
 
@@ -261,8 +235,6 @@ graficoTresVariables(
   meanArray,
   "media"
 );
-let initialValue = 0;
-let initialValueIndex = 0;
 
 // 2. Busqueda de los indices (corte entre la media y el array y)
 
@@ -272,7 +244,6 @@ let crossings = findCrossingPoints(epsilonY, meanValue);
 
 // inserción en el dom
 const dataTableEpsilon = [];
-const indexesArray = [];
 
 crossings.map((el, index) => {
   dataTableEpsilon.push([
@@ -306,114 +277,59 @@ document.addEventListener("DOMContentLoaded", function () {
 
 // generamos un array con arrays entre los índices, recorremos los puntos de corte y dentro mapeamos epsilonx para generar un array entre los puntos de corte. lo hacemos tanto para épsilon como para lambda
 
-const epsilonYIndexesArrays = [];
-const epsilonXIndexesArrays = [];
-const lambdaYIndexesArrays = [];
-const lambdaXIndexesArrays = [];
-const epsilonYIndexesArraysIndex = [];
-const epsilonXIndexesArraysIndex = [];
-const lambdaYIndexesArraysIndex = [];
-const lambdaXIndexesArraysIndex = [];
-
-crossings.map((element, index) => {
-  const eYarray = [];
-  const eXarray = [];
-  const lYarray = [];
-  const lXarray = [];
-  const eYarrayIndex = [];
-  const eXarrayIndex = [];
-  const lYarrayIndex = [];
-  const lXarrayIndex = [];
-
-  epsilonX.map((el, i) => {
-    if (i > element && i < crossings[index + 1]) {
-      eYarray.push(epsilonY[i]);
-      eXarray.push(el);
-      lYarray.push(lambdaY[i]);
-      lXarray.push(lambdaX[i]);
-      eYarrayIndex.push({ index: i, y: epsilonY[i] });
-      eXarrayIndex.push({ index: i, x: el });
-      lYarrayIndex.push({ index: i, y: lambdaY[i] });
-      lXarrayIndex.push({ index: i, x: lambdaX[i] });
-    }
-  });
-
-  epsilonYIndexesArrays.push(eYarray);
-  epsilonXIndexesArrays.push(eXarray);
-  lambdaYIndexesArrays.push(lYarray);
-  lambdaXIndexesArrays.push(lXarray);
-  epsilonYIndexesArraysIndex.push(eYarrayIndex);
-  epsilonXIndexesArraysIndex.push(eXarrayIndex);
-  lambdaYIndexesArraysIndex.push(lYarrayIndex);
-  lambdaXIndexesArraysIndex.push(lXarrayIndex);
-});
+const {
+  epsilonYIndexesArrays,
+  epsilonXIndexesArrays,
+  lambdaYIndexesArrays,
+  lambdaXIndexesArrays,
+  epsilonYIndexesArraysIndex,
+  epsilonXIndexesArraysIndex,
+  lambdaYIndexesArraysIndex,
+  lambdaXIndexesArraysIndex,
+} = getArraysBetweenCrosess(crossings, epsilonX, epsilonX, lambdaX, lambdaY);
 
 // Arreglos entre el x maximo y el indice par siguiente
 
 // generamos dos arreglos : uno con todos los ciclos y otro solo con los impares. se genera un arreglo con objetos: cada objeto es un arreglo impar con cuatro elementos: el indice propio del arreglo que se está generando de los arrays entre indices, el indice local, el índice en el array y el máximo
 
-const maxEpsilonXOdd = [];
+// OBTENER ARRAYS ENTRE LOS MAXIMOS DE EPSILON Y EL PAR POSTERIOR, DE TODOS Y DE LOS IMPARES (maxEpsilonXOddIndex2) Y OTRO CON EL DE LOS INDICES IMPARES (maxEpsilonXOddIndex)
 
-// epsilonXIndexesArrays.map((el, index) => {
-//   if (index % 2 !== 0) {
-//     maxEpsilonXOdd.push({
-//       index,
-//       currentindex: el.findIndex((element) => element === Math.max(...el)),
-//       x: Math.max(...el),
-//     });
-//   }
-// });
+// maxEpsilonXOddIndex, es un  objeto
+const { maxEpsilonXOddIndex, maxEpsilonXOddIndex2 } = getMaxEpsilonXOddIndexes(
+  epsilonXIndexesArrays,
+  crossings
+);
 
-const maxEpsilonXOddIndex = [];
-const maxEpsilonXOddIndex2 = [];
+//  ARRAYS ENTRE INDEX IMPAR - PAR : tambien aprovechamos y sacamos los arrays con los tiempos entre index impar y par
 
-epsilonXIndexesArrays.map((el, index) => {
-  if (index % 2 !== 0) {
-    const localIndex = el.findIndex(
-      (elemento, i) => elemento === Math.max(...el)
-    );
+const {
+  chartXmaxYtoEvenTime,
+  chartXmaxXtoEven,
+  chartXmaxYtoEven,
+  xOddIndexEvenIndexEpsilon,
+  yOddIndexEvenIndexEpsilon,
+  xOddIndexEvenIndexLambda,
+  yOddIndexEvenIndexLambda,
+  oddIndexEvenIndexEpsilonTime,
+} = getArrayOddEvenIndexes(
+  maxEpsilonXOddIndex2,
+  intervalRealArray,
+  crossings,
+  epsilonX,
+  epsilonY,
+  lambdaX,
+  lambdaY,
+  intervalSecondsRealArray
+);
 
-    maxEpsilonXOddIndex.push({
-      index,
-      localIndex,
-      currentIndex: localIndex + crossings[index],
-      x: Math.max(...epsilonXIndexesArrays[index]),
-    });
-  }
-  const localIndex = el.findIndex(
-    (elemento, i) => elemento === Math.max(...el)
-  );
-
-  maxEpsilonXOddIndex2.push({
-    index,
-    localIndex,
-    currentIndex: localIndex + crossings[index],
-    x: Math.max(...epsilonXIndexesArrays[index]),
-  });
-});
-
-// para graficar un ejemplo de intervalo entre el maximo y el par posterior
-
-console.log(maxEpsilonXOddIndex2);
-console.log(crossings);
-const chartXmaxXtoEven = [];
-const chartXmaxYtoEven = [];
-const chartXmaxYtoEvenTime = [];
-
-epsilonX.map((el, index) => {
-  if (index > maxEpsilonXOddIndex2[1].currentIndex && index < crossings[2]) {
-    chartXmaxXtoEven.push(el);
-    chartXmaxYtoEven.push(epsilonY[index]);
-    chartXmaxYtoEvenTime.push(intervalSecondsRealArray[index]);
-  }
-});
+// gráfico entre el maximo y el par posterior
 const posiciones = document.getElementById("posiciones");
 graficoTresVariables(
   posiciones,
-  chartXmaxYtoEvenTime,
-  chartXmaxYtoEven,
+  chartXmaxYtoEvenTime[0],
+  chartXmaxYtoEven[0],
   "Trayectoria en y quinto",
-  chartXmaxXtoEven,
+  chartXmaxXtoEven[0],
   "Trayectoria en x quinto",
   meanArray,
   "mean value"
@@ -432,83 +348,42 @@ graficoTresVariables(
 //   x: 419: es el valor máximo del ciclo
 // };
 
-const xMaxToEven = [];
-const yMaxToEven = [];
-const xMaxToEvenLambda = [];
-const yMaxToEvenLambda = [];
-const xMaxToEvenDerivada = [];
-const yMaxToEvenDerivada = [];
-const xMaxToEvenDerivadaLambda = [];
-const yMaxToEvenDerivadaLambda = [];
-
-// itermos maxEpsilonXOddIndex2 y dentro de este crossings que tiene los cruces e indica los indices. Aprovechamos  el mapeo tambien para derivar
-
-maxEpsilonXOddIndex2.map((el, index) => {
-  const currentArray = [];
-  const currentYArray = [];
-  const currentArrayLambda = [];
-  const currentYArrayLambda = [];
-  if (index % 2 !== 0) {
-    epsilonX.map((element, i) => {
-      if (i > el.currentIndex && i < crossings[index + 1]) {
-        currentArray.push(element);
-      }
-    });
-    epsilonY.map((element, i) => {
-      if (i > el.currentIndex && i < crossings[index + 1]) {
-        currentYArray.push(element);
-      }
-    });
-    lambdaX.map((element, i) => {
-      if (i > el.currentIndex && i < crossings[index + 1]) {
-        currentArrayLambda.push(element);
-      }
-    });
-    lambdaY.map((element, i) => {
-      if (i > el.currentIndex && i < crossings[index + 1]) {
-        currentYArrayLambda.push(element);
-      }
-    });
-    xMaxToEvenDerivada.push(derivada(currentArray, correctedInterval));
-    yMaxToEvenDerivada.push(derivada(currentYArray, correctedInterval));
-    xMaxToEvenDerivadaLambda.push(
-      derivada(currentArrayLambda, correctedInterval)
-    );
-    yMaxToEvenDerivadaLambda.push(
-      derivada(currentYArrayLambda, correctedInterval)
-    );
-    // xMaxToEvenDerivada.push(
-    //   savitzkyGolay(derivada(currentArray, correctedInterval), 3, 2)
-    // );
-    xMaxToEven.push(currentArray);
-    yMaxToEven.push(currentYArray);
-    xMaxToEvenLambda.push(currentArrayLambda);
-    yMaxToEvenLambda.push(currentYArrayLambda);
-  }
-});
-
-// grafico de la derivada
-const graficoDerivada = document.getElementById("derivada");
-// const ctx2 = document.getElementById("myChart2");
-
-graficoDosVariables(
-  graficoDerivada,
-  chartXmaxYtoEvenTime,
-  xMaxToEvenDerivada[0],
-  "Derivada x",
-  yMaxToEvenDerivada[0],
-  "Derivada y"
+const {
+  xMaxToEvenEpsilon,
+  yMaxToEvenEpsilon,
+  xMaxToEvenLambda,
+  yMaxToEvenLambda,
+  xMaxToEvenDerivadaEpsilon,
+  yMaxToEvenDerivadaEpsilon,
+  xMaxToEvenDerivadaLambda,
+  yMaxToEvenDerivadaLambda,
+} = getArrayXMaxToEven(
+  maxEpsilonXOddIndex2,
+  crossings,
+  epsilonX,
+  epsilonY,
+  lambdaX,
+  lambdaY,
+  correctedInterval
 );
-// toeoff
 
 // ----------- ANÁLISIS DE LA DERIVADA / TOE OFF Y CI
+graficoDerivadas(
+  "derivada-epsilon",
+  chartXmaxYtoEvenTime,
+  xMaxToEvenDerivadaEpsilon,
+  "épsilon - x",
+  yMaxToEvenDerivadaEpsilon,
+  "épsilon - y"
+);
 
 const toeOffLocalIndex = [];
 
 // para el toeoff primero buscamos el instante ddonde deja de ser contante la velocidad en x y determinamos un indice local dentro del array que itera
-xMaxToEvenDerivada.map((el) =>
-  toeOffLocalIndex.push(obtenerIndexRamaAscendente(el))
-);
+
+xMaxToEvenDerivadaEpsilon.map((el) => {
+  toeOffLocalIndex.push(obtenerIndexRamaAscendente(el));
+});
 
 // ahora con el indice local  obtenemos el índice en el array general
 const toeOffIndex = [];
@@ -521,80 +396,233 @@ maxEpsilonXOddIndex.map((el, index) => {
 // creamos un array con los tiempos de toeofff
 
 const toeoffTime = toeOffIndex.map((el, index) => intervalSecondsRealArray[el]);
-console.log("toe off time", toeoffTime);
 
-// ahora teniendo el contacto inicial y el toeoff calculamos el tiempo de contacto restando los dos instantes
+// ++++++++++++++++CONTACTO INICIAL+++++++++++++++++++++++
+// determinamos si es contacto de antepié o talon
 
-// CONTACTO INICIAL
+// grafico de las trayectorias en y de epsilon y lambda
+const epsilonLambdaY = document.getElementById("epsilon-lambda-y");
+graficoDosVariables(
+  epsilonLambdaY,
+  intervalSecondsRealArray,
+  epsilonY,
+  "epsilon-y",
+  lambdaY,
+  "lambda-y"
+);
+
+// grafico para ver como se cruzan
+// graficoDerivadas(
+//   "cruce-equis",
+//   oddIndexEvenIndexEpsilonTime,
+//   yOddIndexEvenIndexEpsilon,
+//   "épsilon - y",
+//   yOddIndexEvenIndexLambda,
+//   "lambday - y"
+// );
+// graficoDerivadas(
+//   "cruce-equis",
+//   oddIndexEvenIndexEpsilonTime,
+//   yOddIndexEvenIndexEpsilon,
+//   "épsilon - y",
+//   xOddIndexEvenIndexEpsilon,
+//   "epsilon - x"
+// );
+// determinación del tipo de contacto:
+
+// función para determina si el contacto es de talon o mediopie
+
+const { initialContactType, oddCrossings } = getInitialContactType(
+  yOddIndexEvenIndexEpsilon,
+  yOddIndexEvenIndexLambda,
+  crossings,
+  epsilonY,
+  lambdaY,
+  intervalSecondsRealArray,
+  correctedInterval,
+  xOddIndexEvenIndexEpsilon
+);
+
+// Mostrar el artículo correspondiente
+document.getElementById(initialContactType).style.display = "block";
+console.log("initial contact", initialContactType);
+
+// grafico de los cruces derivados para antepié
+
+// graficoDerivadas(
+//   "cruces-derivados",
+//   crossTimeArray,
+//   crossDerivadaEpsilon,
+//   "derivada epsilon - y ",
+//   crossDerivadaLambda,
+//   "derivada lambda - y"
+// );
+
+// gafico para antepié sin cruces
+graficoDerivadas(
+  "sin-cruces",
+  oddIndexEvenIndexEpsilonTime,
+  yOddIndexEvenIndexEpsilon,
+  "épsilon - y",
+  yOddIndexEvenIndexLambda,
+  "lambday - y"
+);
+
+// grafico de las derivadas con contacto de antepié
+graficoDerivadas(
+  "sin-cruces-derivado",
+  chartXmaxYtoEvenTime,
+  xMaxToEvenDerivadaEpsilon,
+  "derivada épsilon - x",
+  yMaxToEvenDerivadaEpsilon,
+  "derivada epsilon -y "
+);
+// graficoDerivadas(
+//   "sin-cruces-derivado",
+//   chartXmaxYtoEvenTime,
+//   xMaxToEvenDerivadaLambda,
+//   "derivada épsilon - x",
+//   yMaxToEvenDerivadaLambda,
+//   "derivada epsilon -y "
+// );
+
+// *****************************************************************
+// graficamos dinámicamente los cruces
+
+// graficoDosVariablesConfHeight(
+//   "cruces",
+//   crossTimeArray,
+//   crossYEpsilonArray,
+//   "epsilon - x",
+//   crossYLambdaArray,
+//   "lambda - y"
+// );
+// *****************************************************************
 
 // grafico de la derivada lambda
-const graficoDerivadaLambda = document.getElementById("derivada-lambda");
-graficoDosVariables(
-  graficoDerivadaLambda,
+
+graficoDerivadas(
+  "derivada-lambda",
   chartXmaxYtoEvenTime,
-  xMaxToEvenDerivadaLambda[0],
-  "Derivada x Lambda",
-  yMaxToEvenDerivadaLambda[0],
-  "Derivada y Lambda"
+  xMaxToEvenDerivadaLambda,
+  "lambda - x",
+  yMaxToEvenDerivadaLambda,
+  "lambda - y"
 );
 
-//  Consideramos el contacto inicial como el momento en que las trayectorias se separan mas de 200 px/s
+//  Consideramos el contacto inicial como el momento en que las trayectorias se estabilizan: y en velocidad 0 y x en velocidad constante
 
-// entonces restamos las derivadas, en este caso de lambda porque es contacto inicial
+// función que detecta el contacto inicial con talon y el tiempo de contacto, ademas da un arreglo con los datos del contacto inicial y la horizontal
 
-const maxToEvenDerivadaLambdaSubstraction = [];
-xMaxToEvenDerivadaLambda.map((el, i) => {
-  const array = [];
-  el.map((element, index) => {
-    array.push(
-      yMaxToEvenDerivadaLambda[i][index] - xMaxToEvenDerivadaLambda[i][index]
-    );
+const {
+  dataTableContact,
+  dataTableContactArray,
+  initialContactArray,
+  initialContactIndexEpsilon,
+  initialContactFootVector,
+} = getInitialcontact(
+  xMaxToEvenDerivadaEpsilon,
+  yMaxToEvenDerivadaEpsilon,
+  xMaxToEvenDerivadaLambda,
+  yMaxToEvenDerivadaLambda,
+  maxEpsilonXOddIndex,
+  intervalSecondsRealArray,
+  toeoffTime,
+  initialContactType,
+  lambdaX,
+  lambdaY,
+  epsilonX,
+  epsilonY,
+  oddCrossings
+);
+
+// initialContactArray es un arreglo con todos los datos de epsxilon y lambda del momento del contacto inicial
+// Función para determinar valores de cero en epsilon y y obtener el vector horizontal
+console.log("toeoffindex", intervalSecondsRealArray[toeOffIndex[1]]);
+
+// ---------------- HORIZONTAL ---------------------
+
+const { yMaxToEvennZerosArray, horizontalVextor } = getHorizontalVector(
+  maxEpsilonXOddIndex2,
+  crossings,
+  intervalSecondsRealArray,
+  epsilonX,
+  epsilonY,
+  initialContactIndexEpsilon,
+  yMaxToEvenDerivadaEpsilon
+);
+
+// funcion para obtener los angulos entre el vector horizontal y el vector de pie
+
+const { footAngleArray, footAngleMean } = getHorizontalFootAngleArray(
+  horizontalVextor,
+  initialContactFootVector
+);
+
+console.log("foot angle array", footAngleArray);
+console.log("foot angle mean", footAngleMean);
+
+// -----------------------------------------------------------------
+// ---------------------------------------------------------
+//  ------------------- FILTRO Y PROMEDIO DE TIEMPOS
+const result = getAverageDeleteExtremes(dataTableContactArray);
+console.log(result.filtered);
+console.log(result.averages);
+
+// otro método para filtar
+
+// ----------------------------------------------------
+function calcularMediana(datos) {
+  // Ordenar los datos
+  datos.sort((a, b) => a - b);
+
+  // Calcular la mediana
+  let mitad = Math.floor(datos.length / 2);
+  if (datos.length % 2 === 0) {
+    // Si la longitud del array es par, promedio de los dos valores centrales
+    return (datos[mitad - 1] + datos[mitad]) / 2;
+  } else {
+    // Si la longitud del array es impar, el valor central
+    return datos[mitad];
+  }
+}
+
+function calcularMADModificado(datos) {
+  // Calcular la mediana
+  let mediana = calcularMediana(datos);
+
+  // Calcular las desviaciones absolutas respecto a la mediana
+  let desviacionesAbsolutas = datos.map((dato) => Math.abs(dato - mediana));
+
+  // Calcular el MAD (Median Absolute Deviation)
+  let mad = calcularMediana(desviacionesAbsolutas);
+
+  // Calcular la desviación estándar modificada (basada en MAD)
+  let desviacionEstandarModificada = mad * 1.4826;
+
+  return desviacionEstandarModificada;
+}
+
+// Función que aplica el método MAD Modificado a un arreglo de objetos con una propiedad específica
+function aplicarMADModificado(arrayDeObjetos, propiedad) {
+  // Extraer los valores de la propiedad especificada en un arreglo
+  let datos = arrayDeObjetos.map((objeto) => {
+    objeto[3].contcactTime;
   });
-  maxToEvenDerivadaLambdaSubstraction.push(array);
-});
 
-// ahora buscamos el indice donde la diferencia es mayor a 200px
+  // Calcular la desviación estándar modificada usando el método MAD Modificado
+  let desviacionEstandarModificada = calcularMADModificado(datos);
 
-const derivadaSubstractionLambda = [];
+  return desviacionEstandarModificada;
+}
 
-maxToEvenDerivadaLambdaSubstraction.map((el) =>
-  derivadaSubstractionLambda.push(el.findIndex((el) => el > 200))
+let desviacionEstandarModificada = aplicarMADModificado(
+  dataTableContactArray,
+  "contcactTime"
 );
+// console.log(desviacionEstandarModificada);
 
-// ahora derivadaSubstractionLambda tiene los índices locales, o sea a partir de x max de contacto inicial con talon (lambda)
-
-const initialContactIndex = [];
-maxEpsilonXOddIndex.map((el, index) => {
-  initialContactIndex.push(derivadaSubstractionLambda[index] + el.currentIndex);
-});
-
-// y con el indice en el array general obtenemos el instante del despegue
-
-// creamos un array con los tiempos de toeofff
-console.log(initialContactIndex);
-const initialContactTime = initialContactIndex.map(
-  (el, index) => intervalSecondsRealArray[el]
-);
-console.log("toe off time", initialContactTime);
-
-// tenemos que encontrar a que tiempo corresponde para saber el contacto inicial y el tiempo de concacto
-console.log(initialContactTime, toeoffTime);
-const contactTime = toeoffTime.map((el, index) =>
-  Number((el - initialContactTime[index]).toFixed(4))
-);
-
-// inserción en el dom de los datos de contacto
-const dataTableContact = [];
-// const indexesArray = [];
-
-toeoffTime.map((el, index) => {
-  dataTableContact.push([
-    `ciclo ${index + 1}`,
-    `${initialContactTime[index]} s`,
-    `${toeoffTime[index]} s`,
-    `${contactTime[index]} s`,
-  ]);
-});
+// ---------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", function () {
   const tbody = document.querySelector("#contact tbody");

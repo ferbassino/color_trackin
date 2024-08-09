@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <meta charset="UTF-8" /> -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <!-- <link rel="stylesheet" href="styles.css" /> -->
+    <!-- <title>Document</title> -->
+    <script
+      src="https://cdn.plot.ly/plotly-2.32.0.min.js"
+      charset="utf-8"
+    ></script>
+  </head>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+    }
+    h1 {
+      color: #333;
+    }
+    h2 {
+      color: #666;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    tr:nth-child(even) {
+      background-color: #f9f9f9;
+    }
+    code {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue",
+        sans-serif;
+      /* font-family:'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; */
+      color: #dcdcdc; /* Texto claro */
+      letter-spacing: 1px;
+    }
+    #angulos {
+      background-color: aliceblue;
+    }
+  </style>
+  <body>
+    <nav class="menu">
+      <a href="/index.html">Home</a>
+      <a href="/jump_tracker.html">Upload Jump video</a>
+      <a href="/jump_analysis.html">Jump Analysis</a>
+      <!-- <a href="#">Servicios</a>
+        <a href="#">Contacto</a> -->
+    </nav>
+
+    <header>
+      <h1>Jump analysis</h1>
+    </header>
+    <main>
+      <section>
+        <ul>
+          <li>Ancho del video: <span id="video-width"></span> px</li>
+          <li>Alto del video: <span id="video-height"></span> px</li>
+          <li>Cuadros por segundo: <span id="frames"></span> fps</li>
+          <li>
+            Duración del video en slow: <span id="span-duration"></span> s
+          </li>
+          <li>
+            Duración del registro: <span id="span-real-duration"></span> s
+          </li>
+          <li>Intervalo de tiempo: <span id="interval"></span> s</li>
+          <li>Lado del video: <span id="vista-video"></span></li>
+        </ul>
+      </section>
+      <section>
+        <h3>Referencias</h3>
+        <p>
+          Vamos a generar un cuadro con las variables con un vínculo hacea la
+          sección donde se desarrolla
+        </p>
+        <img src="./assets/cinemática-salto.png" />
+
+        <article style="margin-top: 70px">
+          <h2>Rendimiento</h2>
+          <h1>Para asociar a otras evaluaciones</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>qué evalúa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Altura: <span id="max-height"></span> m</td>
+                <td>Desplazamiento vertical del centro de masa</td>
+              </tr>
+              <tr>
+                <td>Pico de potencia</td>
+                <td>Tasa mas alta de trabajo durante el salto</td>
+              </tr>
+              <tr>
+                <td>Fuerza media propulsiva</td>
+                <td>Fuerza media producida durante el ascenso</td>
+              </tr>
+              <tr>
+                <td>Impulso propulsivo</td>
+                <td>Producto de la fuerza y el tiempo durante el ascenso</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article style="margin-top: 70px">
+          <h2>Fatiga neuromuscular</h2>
+          <h1>Detectar cuando se presenta fatiga muscular</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>qué evalúa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Altura: <span id="max-height"></span> m</td>
+                <td>Desplazamiento vertical del centro de masa</td>
+              </tr>
+              <tr>
+                <td>Pico de potencia</td>
+                <td>Tasa mas alta de trabajo durante el salto</td>
+              </tr>
+              <tr>
+                <td>Fuerza media propulsiva</td>
+                <td>Fuerza media producida durante el ascenso</td>
+              </tr>
+              <tr>
+                <td>Impulso propulsivo</td>
+                <td>Producto de la fuerza y el tiempo durante el ascenso</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+
+        <article style="margin-top: 70px">
+          <h2>Alta</h2>
+          <h1>Para evaluar el progreso y dar el alta</h1>
+          <table>
+            <thead>
+              <tr>
+                <th>Variable</th>
+                <th>qué evalúa</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  Pico de fuerza propulsiva: <span id="max-height"></span> m
+                </td>
+                <td>Máxima fuerza producida durante el ascenso</td>
+              </tr>
+              <tr>
+                <td>Pico de fuerza de aterrizaje</td>
+                <td>Máxima fuerza producida durante el aterizaje</td>
+              </tr>
+              <tr>
+                <td>Impulso de aterrizaje</td>
+                <td>Producto de la fuerza por el tiempo de atrrizaje</td>
+              </tr>
+              <tr>
+                <td>Asymetría</td>
+                <td>Diferencia en porcentaje alcanzada por cada miembro</td>
+              </tr>
+            </tbody>
+          </table>
+        </article>
+      </section>
+      <section style="margin-top: 70px">
+        <h3>Cinemática trocanter en y</h3>
+        <p>
+          El análisis comienza a partir de la posición que es lo que captura el
+          tracking
+        </p>
+        <p>
+          La posición está en pixeles y calibramos a metros ingresando la
+          distancia desde el trocanter hasta el cóndilo
+        </p>
+        <h4>Altura máxima: m</h4>
+        <p>
+          De la posición nos interesan varias cosas, por ejemplo ademas de la
+          altura máxima, la altura mínima, que va a marcar el inicio de la
+          distancia propulsiva, y los instantes de tiempo de caca una de estas
+          posiciones a ademas del instante de tiempo en que pasa por el cero.
+        </p>
+        <p>
+          La velocidad y la aceleración se obtienen por derivación y para
+          generar arrays suavizados aplicamos un filtro de media móvil para cada
+          array de datos. Dependiendo el cálculo que hagamos vamos a aplicar el
+          filtro o no. por ejemplo para calcular la velocidad de despegue por la
+          derivada, no aplicamos el filtro ya que influye mucho sobre el valor
+          máximo
+        </p>
+        <h4>
+          Grafico de la posición, velocidad y aceleración en función del tiempo
+        </h4>
+        <canvas id="alphaY-time"></canvas>
+      </section>
+
+      <section>
+        <h3>ángulos articulares</h3>
+        <canvas id="angulos"></canvas>
+      </section>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/9.4.4/math.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numbers.js/0.7.0/numbers.min.js"></script>
+    <script src="./jumpAnalysis.js" type="module"></script>
+  </body>
+</html>
