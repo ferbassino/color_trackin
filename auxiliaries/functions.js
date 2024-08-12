@@ -296,7 +296,7 @@ export function getTimeArray(array, interval) {
 }
 
 // obtener tiempo real e intervalo de tiempo corregido
-export function obtenerTiempoEIntervaloReal(groups, duration) {
+export function obtenerTiempoEIntervaloReal(groups) {
   const correctedGroups = [];
 
   let repoitedGroups = 0;
@@ -319,6 +319,9 @@ export function obtenerTiempoEIntervaloReal(groups, duration) {
       correctedGroups.push(groups[index]);
     }
   }
+  const duration =
+    correctedGroups[correctedGroups.length - 1][0].milliseconds -
+    correctedGroups[0][0].milliseconds;
 
   const realTime = ((duration / 1000) * fps) / 240;
 
@@ -891,7 +894,7 @@ export const getArrayXMaxToEven = (
       });
       // xMaxToEvenDerivadaEpsilon.push(derivada(currentArray, correctedInterval));
       xMaxToEvenDerivadaEpsilon.push(
-        movingAverage(derivada(currentArray, correctedInterval), 2)
+        movingAverage(derivada(currentArray, correctedInterval), 1)
       );
       yMaxToEvenDerivadaEpsilon.push(
         derivada(currentYArray, correctedInterval)
@@ -1113,7 +1116,9 @@ export const getInitialcontact = (
   lambdaY,
   epsilonX,
   epsilonY,
-  oddCrossings
+  oddCrossings,
+  alphaX,
+  alphaY
 ) => {
   // como las velocidades constantes tienen mayor frecuencia vamos a sacar el modo de ambas velocdadesm, los vamos a restar y vamos a tomar un porcentaje de esa diferencia para localizar el punto de separación próximo a la estabilización
 
@@ -1171,7 +1176,7 @@ export const getInitialcontact = (
 
   xYMaxToEvenDerivadaLambda.map((el, i) => {
     const currentIndexLambda = el.findIndex(
-      (element, index) => element > xYMaxToEvenDerivadaLambdaDiff[i] * 0.9
+      (element, index) => element > xYMaxToEvenDerivadaLambdaDiff[i] * 0.8
     );
     localInitialContactIndexLambda.push(currentIndexLambda);
   });
@@ -1181,10 +1186,26 @@ export const getInitialcontact = (
     const currentIndexEpsilon = el.findIndex(
       (element, index) => element > xYMaxToEvenDerivadaEpsilonDiff[i] * 0.8
     );
+
     localInitialContactIndexEpsilon.push(currentIndexEpsilon);
   });
 
+  // o buiscamos el primer valor igual al modo
+
+  // const localInitialContactIndexEpsilon = [];
+  // xMaxToEvenDerivadaEpsilon.map((el, i) => {
+  //   // console.log(xMaxToEvenDerivadaEpsilon[i]);
+
+  //   const currentIndexEpsilon = el.findIndex(
+  //     (element, index) =>
+  //       element === numbers.statistic.mode(xMaxToEvenDerivadaEpsilon[i])
+  //   );
+
+  //   localInitialContactIndexEpsilon.push(currentIndexEpsilon);
+  // });
+
   // ahora localInitialContactIndex tiene los índices locales, o sea a partir de x max de contacto inicial con talon (lambda)
+
   const initialContactIndexLambda = [];
   const initialContactIndexEpsilon = [];
 
@@ -1210,16 +1231,16 @@ export const getInitialcontact = (
           epsilonX[index] - lambdaX[index],
           epsilonY[index] - lambdaY[index],
         ]);
-        initialContactArray.push([
-          {
-            index: el,
-            lambdaX: lambdaX[index],
-            lambdaY: lambdaY[index],
-            epsilonX: epsilonX[index],
-            epsilonY: epsilonY[index],
-            time: intervalSecondsRealArray[index],
-          },
-        ]);
+        initialContactArray.push({
+          index: el,
+          lambdaX: lambdaX[index],
+          lambdaY: lambdaY[index],
+          epsilonX: epsilonX[index],
+          epsilonY: epsilonY[index],
+          alphaX: alphaX[index],
+          alphaY: alphaY[index],
+          time: intervalSecondsRealArray[index],
+        });
       }
     });
   });
@@ -1265,14 +1286,15 @@ export const getInitialcontact = (
   const dataTableContactArray = [];
   toeoffTime.map((el, index) => {
     // cambiar este a talon
-    if (initialContactType === "midfoot") {
+    if (initialContactType === "rearfoot") {
       dataTableContact.push([
         `ciclo ${index + 1}`,
         `${initialContactTimeLambda[index]} s`,
-        `${toeoffTime[index]} s`,
         `${contactTimeLambda[index]} s`,
+        `${toeoffTime[index]} s`,
       ]);
       dataTableContactArray.push([
+        { type: initialContactType },
         { ciclo: index + 1 },
         {
           initialContactTime: initialContactTimeLambda[index],
@@ -1282,23 +1304,24 @@ export const getInitialcontact = (
       ]);
     }
     // descometar este
-    // if (initialContactType === "midfoot") {
-    //   dataTableContact.push([
-    //     `ciclo ${index + 1}`,
-    //     `${initialContactTimeEpsilon[index]} s`,
-    //     `${toeoffTime[index]} s`,
-    //     `${contactTimeEpsilon[index]} s`,
-    //   ]);
-    //   dataTableContactArray.push([
-    //     { type: initialContactType },
-    //     { ciclo: index + 1 },
-    //     {
-    //       initialContactTime: initialContactTimeEpsilon[index],
-    //     },
-    //     { toeoffTime: toeoffTime[index] },
-    //     { contcactTime: contactTimeEpsilon[index] },
-    //   ]);
-    // }
+    if (initialContactType === "midfoot") {
+      dataTableContact.push([
+        `ciclo ${index + 1}`,
+        `${initialContactTimeEpsilon[index]} s`,
+        `${contactTimeEpsilon[index]} s`,
+        `${toeoffTime[index]} s`,
+      ]);
+
+      dataTableContactArray.push([
+        { type: initialContactType },
+        { ciclo: index + 1 },
+        {
+          initialContactTime: initialContactTimeEpsilon[index],
+        },
+        { toeoffTime: toeoffTime[index] },
+        { contactTime: contactTimeEpsilon[index] },
+      ]);
+    }
   });
 
   return {
@@ -1355,7 +1378,8 @@ export const getFiveElementsGroups = (groups) => {
 export const getAverageDeleteExtremes = (data) => {
   // Filtramos los elementos que tienen contactTime negativo o cero
   let filteredData = data.filter((item) => {
-    const contactTime = item[3]?.contcactTime;
+    const contactTime = item[4]?.contactTime;
+
     return contactTime > 0;
   });
 
@@ -1368,19 +1392,19 @@ export const getAverageDeleteExtremes = (data) => {
   }
 
   // Encontrar los valores extremos de contactTime
-  let contactTimes = filteredData.map((item) => item[3].contcactTime);
-  let maxContactTime = Math.max(...contactTimes);
-  let minContactTime = Math.min(...contactTimes);
+  let contactTime = filteredData.map((item) => item[4].contactTime);
+  let maxContactTime = Math.max(...contactTime);
+  let minContactTime = Math.min(...contactTime);
 
   // Filtrar los elementos con los valores extremos de contactTime
   filteredData = filteredData.filter((item) => {
-    const contactTime = item[3].contcactTime;
+    const contactTime = item[4].contactTime;
     return contactTime !== maxContactTime && contactTime !== minContactTime;
   });
 
   // Calcular los promedios de initialContactTime, toeoffTime y contactTime
 
-  let contactTimesFiltered = filteredData.map((item) => item[3].contcactTime);
+  let contactTimesFiltered = filteredData.map((item) => item[4].contactTime);
 
   let averageContactTime =
     contactTimesFiltered.reduce((a, b) => a + b, 0) /
@@ -1402,7 +1426,8 @@ export const getHorizontalVector = (
   epsilonX,
   epsilonY,
   initialContactIndexEpsilon,
-  yMaxToEvenDerivadaEpsilon
+  yMaxToEvenDerivadaEpsilon,
+  dataTableContact
 ) => {
   const maxToEvenEpsilonArray = [];
   maxEpsilonXOddIndex2.map((element, index) => {
@@ -1471,11 +1496,12 @@ export const getHorizontalVector = (
 
 export const getHorizontalFootAngleArray = (
   horizontalVextor,
-  initialContactFootVector
+  initialContactFootVector,
+  dataTableContact,
+  initialContactAngleArray
 ) => {
   const footAngleArray = [];
 
-  let currentAngle = 0;
   horizontalVextor.map((el, index) => {
     const dotProduct =
       initialContactFootVector[index][0] * horizontalVextor[index][0] +
@@ -1496,6 +1522,17 @@ export const getHorizontalFootAngleArray = (
 
     footAngleArray.push(gradAngle);
   });
+  initialContactAngleArray.pop();
+  const dataTableContactAngle = [];
+  dataTableContact.map((el, index) => {
+    const currentArray = [];
+    currentArray.push(
+      ...dataTableContact[index],
+      `${footAngleArray[index]} °`,
+      `${initialContactAngleArray[index]} °`
+    );
+    dataTableContactAngle.push(currentArray);
+  });
 
   footAngleArray.pop();
 
@@ -1505,5 +1542,100 @@ export const getHorizontalFootAngleArray = (
 
   // Calculamos el promedio dividiendo la suma entre la cantidad de elementos
   let footAngleMean = parseInt(suma / footAngleArray.length);
-  return { footAngleArray, footAngleMean };
+
+  return { footAngleArray, footAngleMean, dataTableContactAngle };
+};
+
+export const getToeoffTime = (
+  xMaxToEvenDerivadaEpsilon,
+  maxEpsilonXOddIndex,
+  intervalSecondsRealArray
+) => {
+  const toeOffLocalIndex = [];
+
+  // para el toeoff primero buscamos el instante ddonde deja de ser contante la velocidad en x y determinamos un indice local dentro del array que itera
+
+  xMaxToEvenDerivadaEpsilon.map((el) => {
+    toeOffLocalIndex.push(obtenerIndexRamaAscendente(el));
+  });
+
+  // ahora con el indice local  obtenemos el índice en el array general
+  const toeOffIndex = [];
+  maxEpsilonXOddIndex.map((el, index) => {
+    toeOffIndex.push(toeOffLocalIndex[index] + el.currentIndex);
+  });
+
+  // y con el indice en el array general obtenemos el instante del despegue
+
+  // creamos un array con los tiempos de toeofff
+
+  const toeoffTime = toeOffIndex.map(
+    (el, index) => intervalSecondsRealArray[el]
+  );
+  return toeoffTime;
+};
+
+export const getHipFootAngleAndDistance = (
+  initialContactArray,
+  initialContactType
+) => {
+  const alphaLambdaAngleArray = [];
+  const alphaEpsilonAngleArray = [];
+  const initialContactAngleArray = [];
+
+  initialContactArray.map((element, index) => {
+    const currentAngle = [];
+    const alphaVerticalVector = [0, element.alphaY - element.lambdaY];
+
+    const alphaLambdaVector = [
+      element.alphaX - element.lambdaX,
+      element.alphaY - element.lambdaY,
+    ];
+    const alphaEpsilonVector = [
+      element.alphaX - element.epsilonX,
+      element.alphaY - element.epsilonY,
+    ];
+
+    // dots products
+    const alphaLambdaDotProduct =
+      alphaVerticalVector[0] * alphaLambdaVector[0] +
+      alphaVerticalVector[1] * alphaLambdaVector[1];
+
+    const alphaEpsilonDotProduct =
+      alphaVerticalVector[0] * alphaEpsilonVector[0] +
+      alphaVerticalVector[1] * alphaEpsilonVector[1];
+
+    // modules
+    const alphaVerticalModule = Math.sqrt(
+      Math.pow(alphaVerticalVector[0], 2) + Math.pow(alphaVerticalVector[1], 2)
+    );
+    const alphaLambdaModule = Math.sqrt(
+      Math.pow(alphaLambdaVector[0], 2) + Math.pow(alphaLambdaVector[1], 2)
+    );
+    const alphaEpsilonModule = Math.sqrt(
+      Math.pow(alphaEpsilonVector[0], 2) + Math.pow(alphaEpsilonVector[1], 2)
+    );
+    // modules product
+    const alphaLambdaModuleProducts = alphaVerticalModule * alphaLambdaModule;
+    const alphaEpsilonModuleProducts = alphaVerticalModule * alphaEpsilonModule;
+
+    if (initialContactType === "rearfoot") {
+      initialContactAngleArray.push(
+        parseInt(
+          (Math.acos(alphaLambdaDotProduct / alphaLambdaModuleProducts) * 180) /
+            Math.PI
+        )
+      );
+    }
+    if (initialContactType === "midfoot") {
+      initialContactAngleArray.push(
+        parseInt(
+          (Math.acos(alphaEpsilonDotProduct / alphaEpsilonModuleProducts) *
+            180) /
+            Math.PI
+        )
+      );
+    }
+  });
+  return initialContactAngleArray;
 };

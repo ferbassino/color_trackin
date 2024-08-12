@@ -21,13 +21,13 @@ import {
   getInitialcontact,
   getHorizontalVector,
   getHorizontalFootAngleArray,
+  getToeoffTime,
+  getHipFootAngleAndDistance,
 } from "./auxiliaries/functions.js";
 import { obtenerAngulos } from "./auxiliaries/angulos.js";
 import {
-  graficoDeUnaVariable,
   graficoDeDispersión,
   graficoDosVariables,
-  graficoCuatroVariables,
   graficoTresVariables,
 } from "./auxiliaries/charts.js";
 
@@ -51,58 +51,20 @@ let videoHeight = JSON.parse(localStorage.getItem("videoHeight"));
 const spanVideoHeight = document.getElementById("video-height");
 spanVideoHeight.textContent = videoHeight;
 
-// ---------------------  ARRAY -----------------------
-// corresponde a los datos que vienen del rastreo y que se almacenan en el local storage, el array contiene objetos con posiciones en x, posición en y los milisegundos en que son capturados. las capturas vienen en grupos de cinco (dados por la marca de tiempo en milisegundos) que corresponde a los marcadores de trocanter, condilo, maleolo, talon y quinto met.
-
-// -------------  Dividir en grupos / intervalo de tiempo --------------------
-
-// Vamos a crear una funcion  para capturar en grupos de cinco para conocer los instantes y poder calcular los tiempos
-// invocamos a la funcion para dividir en grupos de cinco
-
+// GRUPOS DE 5 OBJETOS A PARTIR DEL ARRAY
 const groups = dividirEnGroups(array);
 
-// groups entrega un array de objetos con cinco posiciones:
-
-[
-  { x: 309, y: 668, milliseconds: 1719446522954 },
-  { x: 367, y: 501, milliseconds: 1719446522955 },
-  { x: 389, y: 332, milliseconds: 1719446522955 },
-  { x: 384, y: 310, milliseconds: 1719446522955 },
-  { x: 447, y: 309, milliseconds: 1719446522955 },
-];
-console.log(groups);
-
-// llega un momento en el traqueo que los tiempos son mas largos y no permiten diferenciar los grupos, el length se hace mas corto. entonces creamos una funcion para crear un arreglo solo con los grupos que tienen cinco elementos
-
-// función para eliminar los grupos con menos de 5 elementos
-
+// GRUPOS CON 5 OBJETOS Y MENOS DE 10 MILISEGUNDOS ENTRE ELLOS
 const fiveElementsGroups = getFiveElementsGroups(groups);
-console.log("fiveelement", fiveElementsGroups);
-// -------------  CREAR ARRAYS POR MARCADOR  --------------------
 
-// creamos una función que agrupa por marcadores, nos va a dar cinco arreglos con objetos pero por marcador, los arreglos son
-// alpha para trocanter
-// beta para condilo
-// gamma para maleolo
-// lambda para talon
-// epsilon para quinto met
-
+// DIVIDIMOS EL ARRAY POR MARCADOR
 const { alpha, beta, gamma, lambda, epsilon } = dividirPorMarcador(array);
 
-// ------------- INTERVALO DE TIEMPO
-
-// el video tiene los cuadros propios pero el listener de captura dispara mas rápido, por lo menos para los 240 cuadros, por lo que vamos a tener mas muestras que los cuadros del video, entonces tenemos que corregir para que el intervalo de tiempo sea el correcto
-
-// la cantidad de mustras capturadas por el listener está representada por el length del array groups, pero como dispara antes hay valores repetidos. creamos un ciclo para obtener un length real que se aproxime a los 240 cuadros
-
-// función que obtiene el tiempo real del video evaluado y el intervalo a 240 cuadros. la función elimina grupos repetidos, tambien devuelve el array de grupos sin la repeticiones
-console.log(fiveElementsGroups);
-
+// GRUPOS CORREGIDOS SIN REPETIDOS, INTERVALO DE TIEMPO Y EL TIEMPO REAL
 const { realTime, correctedInterval, correctedGroups } =
-  obtenerTiempoEIntervaloReal(fiveElementsGroups, duration);
+  obtenerTiempoEIntervaloReal(fiveElementsGroups);
 
-// una vez que tenemos corregidos los grupos vamos a usar el length de este para igualarlo al length de los arrays de los marcadores, o sea que alpha, beta, gamma, etc no tengan valores repetidos
-
+// ARRAYS DE MARCADORES SIN REPETIDOS
 const { newAlpha, newBeta, newGamma, newLambda, newEpsilon } =
   filtrarRepetidosMarcadores(
     alpha,
@@ -119,19 +81,16 @@ console.log(
   newGamma.length,
   newEpsilon.length
 );
-// array de tiempo para los news
 
+// ARRAY DE TIEMPO EN MILISEGUNDOS Y EN SEGUNDOS
 const intervalRealArray = getIntervalRealArray(newAlpha);
 
 const intervalSecondsRealArray = getSecondsIntervalRealArray(
   intervalRealArray,
   fps
 );
-// const arrayBetweenIndexes = getIntervalBetweenIndexes(10, 20);
 
-// -------------  ANGULOS DE LAS ARTICULACIONES  --------------------
-
-// calculo de los angulos a través del producto escalar: coseno del angulo igual a la division entre el producto escalar y el producto de los módulos
+// ANGULO DE LAS ARTICULACIONES SEGUN EL LADO DEL REGISTRO
 
 const { hipAngle, kneeAngle, ankleAngle } = obtenerAngulos(
   newAlpha,
@@ -163,21 +122,15 @@ const intervalo = document.getElementById("interval");
 
 // Insertar un nuevo texto dentro del elemento h1
 time.textContent = realTime.toFixed(2);
-intervalo.textContent = `Intervalo de tiempo: ${Number(
-  correctedInterval.toFixed(4)
-)} s`;
+intervalo.textContent = Number(correctedInterval.toFixed(4));
 
 // de la vista del video:
 
 const ladoVista = ladoDelVideo(alpha);
 const vistaVideo = document.getElementById("vista-video");
 vistaVideo.textContent = ladoVista;
-// ---------------- fin inserciones en el html ---------------
 
-// ---------------------------- FIN TIEMPO ---------------------
-
-// ------------------ GOTA ----------------
-// creamos una funcion  para obtener las coordenadas en x y y  de cada marcador en
+// ARRAYS DE X E Y POR MARCADOR
 
 const {
   alphaX,
@@ -209,12 +162,8 @@ graficoDeDispersión(
   epsilonX,
   epsilonY
 );
-// -------------------- fin gota
 
-// --- ANALISIS GOTA MARCADOR 5° METATARSIANO (EPSILON): TOEOFF / CI ----
-
-// 1. buscamos el maximo y el mínimo para luego obtener la media y que nos de un valor aproximadamente que corte por la mitad de la curva.
-
+// BUSCAMOS LA MÍNIMA DE LA MÁXIMA EN Y PARA BUSCAR LOS INDEX
 const meanValue = getMinToMax(epsilonY);
 
 const meanSpan = document.getElementById("mean");
@@ -236,11 +185,9 @@ graficoTresVariables(
   "media"
 );
 
-// 2. Busqueda de los indices (corte entre la media y el array y)
+// CORTES EN EPSILON Y
 
 let crossings = findCrossingPoints(epsilonY, meanValue);
-
-// INDEX0: buscamos el indice del primer elemento mayor al valor medio (mean value). IMPORTANTE: cuando comienza el análisis el pie debe estar en apoyo medio
 
 // inserción en el dom
 const dataTableEpsilon = [];
@@ -271,12 +218,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// función para encontrar los índices
-
-// Como el contacto inicial se va a encontrar despues del punto mas anterior de la trayectoria de epsilonx , vamos a generar arrays posteriores a los index impares. primero creamos un array con los index impares
-
-// generamos un array con arrays entre los índices, recorremos los puntos de corte y dentro mapeamos epsilonx para generar un array entre los puntos de corte. lo hacemos tanto para épsilon como para lambda
-
+// ARRAYS ENTRE LOS INDICES
 const {
   epsilonYIndexesArrays,
   epsilonXIndexesArrays,
@@ -288,19 +230,13 @@ const {
   lambdaXIndexesArraysIndex,
 } = getArraysBetweenCrosess(crossings, epsilonX, epsilonX, lambdaX, lambdaY);
 
-// Arreglos entre el x maximo y el indice par siguiente
-
-// generamos dos arreglos : uno con todos los ciclos y otro solo con los impares. se genera un arreglo con objetos: cada objeto es un arreglo impar con cuatro elementos: el indice propio del arreglo que se está generando de los arrays entre indices, el indice local, el índice en el array y el máximo
-
-// OBTENER ARRAYS ENTRE LOS MAXIMOS DE EPSILON Y EL PAR POSTERIOR, DE TODOS Y DE LOS IMPARES (maxEpsilonXOddIndex2) Y OTRO CON EL DE LOS INDICES IMPARES (maxEpsilonXOddIndex)
-
-// maxEpsilonXOddIndex, es un  objeto
+// ARRAYS ENTRE EL MÁXIMO DE EPSILON Y EL ÍNDICE
 const { maxEpsilonXOddIndex, maxEpsilonXOddIndex2 } = getMaxEpsilonXOddIndexes(
   epsilonXIndexesArrays,
   crossings
 );
 
-//  ARRAYS ENTRE INDEX IMPAR - PAR : tambien aprovechamos y sacamos los arrays con los tiempos entre index impar y par
+//  ARRAYS ENTRE INDEX IMPAR - PAR
 
 const {
   chartXmaxYtoEvenTime,
@@ -334,19 +270,8 @@ graficoTresVariables(
   meanArray,
   "mean value"
 );
-// fin grafico xmax par
 
-// DERIVADA
-// Cálculo de la derivada las trayectorias para determinar toeoff y contacto inicial. primero vamos a obtener el intervalo entre el máximo de x y el index par posterior.
-
-// recordemos como viene el arreglo con los objetos donde tenemos los maximos maxEpsilonXOddIndex2:
-
-// 1 : {
-//   currentIndex: 151, Es el indice donde se encuentra el maximo
-//   index: 1, es el indice del objeto
-//   localIndex: 50, es el indice local, el que tiene el máximo dentro de el array del ciclo
-//   x: 419: es el valor máximo del ciclo
-// };
+// DERIVADAS
 
 const {
   xMaxToEvenEpsilon,
@@ -377,61 +302,16 @@ graficoDerivadas(
   "épsilon - y"
 );
 
-const toeOffLocalIndex = [];
+// FUNCIÓN PARA EL TOE-OFF: retorna un arreglo con los tiempos del toeoff
 
-// para el toeoff primero buscamos el instante ddonde deja de ser contante la velocidad en x y determinamos un indice local dentro del array que itera
-
-xMaxToEvenDerivadaEpsilon.map((el) => {
-  toeOffLocalIndex.push(obtenerIndexRamaAscendente(el));
-});
-
-// ahora con el indice local  obtenemos el índice en el array general
-const toeOffIndex = [];
-maxEpsilonXOddIndex.map((el, index) => {
-  toeOffIndex.push(toeOffLocalIndex[index] + el.currentIndex);
-});
-
-// y con el indice en el array general obtenemos el instante del despegue
-
-// creamos un array con los tiempos de toeofff
-
-const toeoffTime = toeOffIndex.map((el, index) => intervalSecondsRealArray[el]);
-
-// ++++++++++++++++CONTACTO INICIAL+++++++++++++++++++++++
-// determinamos si es contacto de antepié o talon
-
-// grafico de las trayectorias en y de epsilon y lambda
-const epsilonLambdaY = document.getElementById("epsilon-lambda-y");
-graficoDosVariables(
-  epsilonLambdaY,
-  intervalSecondsRealArray,
-  epsilonY,
-  "epsilon-y",
-  lambdaY,
-  "lambda-y"
+const toeoffTime = getToeoffTime(
+  xMaxToEvenDerivadaEpsilon,
+  maxEpsilonXOddIndex,
+  intervalSecondsRealArray
 );
 
-// grafico para ver como se cruzan
-// graficoDerivadas(
-//   "cruce-equis",
-//   oddIndexEvenIndexEpsilonTime,
-//   yOddIndexEvenIndexEpsilon,
-//   "épsilon - y",
-//   yOddIndexEvenIndexLambda,
-//   "lambday - y"
-// );
-// graficoDerivadas(
-//   "cruce-equis",
-//   oddIndexEvenIndexEpsilonTime,
-//   yOddIndexEvenIndexEpsilon,
-//   "épsilon - y",
-//   xOddIndexEvenIndexEpsilon,
-//   "epsilon - x"
-// );
-// determinación del tipo de contacto:
-
-// función para determina si el contacto es de talon o mediopie
-
+// -------------------- CONTACTO INICIAL -------------------------
+// TIPO DE CONTACTO INICIAL
 const { initialContactType, oddCrossings } = getInitialContactType(
   yOddIndexEvenIndexEpsilon,
   yOddIndexEvenIndexLambda,
@@ -442,62 +322,11 @@ const { initialContactType, oddCrossings } = getInitialContactType(
   correctedInterval,
   xOddIndexEvenIndexEpsilon
 );
-
+const initialContactTypeSpan = document.getElementById("initial-contact");
+initialContactTypeSpan.textContent = initialContactType;
 // Mostrar el artículo correspondiente
 document.getElementById(initialContactType).style.display = "block";
 console.log("initial contact", initialContactType);
-
-// grafico de los cruces derivados para antepié
-
-// graficoDerivadas(
-//   "cruces-derivados",
-//   crossTimeArray,
-//   crossDerivadaEpsilon,
-//   "derivada epsilon - y ",
-//   crossDerivadaLambda,
-//   "derivada lambda - y"
-// );
-
-// gafico para antepié sin cruces
-graficoDerivadas(
-  "sin-cruces",
-  oddIndexEvenIndexEpsilonTime,
-  yOddIndexEvenIndexEpsilon,
-  "épsilon - y",
-  yOddIndexEvenIndexLambda,
-  "lambday - y"
-);
-
-// grafico de las derivadas con contacto de antepié
-graficoDerivadas(
-  "sin-cruces-derivado",
-  chartXmaxYtoEvenTime,
-  xMaxToEvenDerivadaEpsilon,
-  "derivada épsilon - x",
-  yMaxToEvenDerivadaEpsilon,
-  "derivada epsilon -y "
-);
-// graficoDerivadas(
-//   "sin-cruces-derivado",
-//   chartXmaxYtoEvenTime,
-//   xMaxToEvenDerivadaLambda,
-//   "derivada épsilon - x",
-//   yMaxToEvenDerivadaLambda,
-//   "derivada epsilon -y "
-// );
-
-// *****************************************************************
-// graficamos dinámicamente los cruces
-
-// graficoDosVariablesConfHeight(
-//   "cruces",
-//   crossTimeArray,
-//   crossYEpsilonArray,
-//   "epsilon - x",
-//   crossYLambdaArray,
-//   "lambda - y"
-// );
-// *****************************************************************
 
 // grafico de la derivada lambda
 
@@ -512,7 +341,7 @@ graficoDerivadas(
 
 //  Consideramos el contacto inicial como el momento en que las trayectorias se estabilizan: y en velocidad 0 y x en velocidad constante
 
-// función que detecta el contacto inicial con talon y el tiempo de contacto, ademas da un arreglo con los datos del contacto inicial y la horizontal
+// función que detecta el contacto inicial según el tipo de contacto y el tiempo de contacto, ademas da un arreglo con los datos del contacto inicial y la horizontal
 
 const {
   dataTableContact,
@@ -533,12 +362,13 @@ const {
   lambdaY,
   epsilonX,
   epsilonY,
-  oddCrossings
+  oddCrossings,
+  alphaX,
+  alphaY
 );
 
-// initialContactArray es un arreglo con todos los datos de epsxilon y lambda del momento del contacto inicial
-// Función para determinar valores de cero en epsilon y y obtener el vector horizontal
-console.log("toeoffindex", intervalSecondsRealArray[toeOffIndex[1]]);
+// ---------- initialContactArray ---------- es un arreglo con todos los datos de alpha, epsxilon y lambda del momento del contacto inicial
+// Función para determinar valores de cero en epsilon y y obtener el vector horizontal en el momento del contacto inicial, obtenido con los valores 0 de las derivadas
 
 // ---------------- HORIZONTAL ---------------------
 
@@ -552,22 +382,30 @@ const { yMaxToEvennZerosArray, horizontalVextor } = getHorizontalVector(
   yMaxToEvenDerivadaEpsilon
 );
 
-// funcion para obtener los angulos entre el vector horizontal y el vector de pie
+// ANGULO ENTRE LA CADERA Y EL PIE Y DISTANCIA CADERA-PIE  EN EL CONTACTO INICIAL
 
-const { footAngleArray, footAngleMean } = getHorizontalFootAngleArray(
-  horizontalVextor,
-  initialContactFootVector
+const initialContactAngleArray = getHipFootAngleAndDistance(
+  initialContactArray,
+  initialContactType
 );
 
-console.log("foot angle array", footAngleArray);
-console.log("foot angle mean", footAngleMean);
+console.log(initialContactAngleArray);
+
+// funcion para obtener los angulos entre el vector horizontal y el vector de pie
+
+const { footAngleArray, footAngleMean, dataTableContactAngle } =
+  getHorizontalFootAngleArray(
+    horizontalVextor,
+    initialContactFootVector,
+    dataTableContact,
+    initialContactAngleArray
+  );
 
 // -----------------------------------------------------------------
 // ---------------------------------------------------------
 //  ------------------- FILTRO Y PROMEDIO DE TIEMPOS
+
 const result = getAverageDeleteExtremes(dataTableContactArray);
-console.log(result.filtered);
-console.log(result.averages);
 
 // otro método para filtar
 
@@ -620,14 +458,13 @@ let desviacionEstandarModificada = aplicarMADModificado(
   dataTableContactArray,
   "contcactTime"
 );
-// console.log(desviacionEstandarModificada);
 
 // ---------------------------------------------------------
 
 document.addEventListener("DOMContentLoaded", function () {
   const tbody = document.querySelector("#contact tbody");
 
-  dataTableContact.forEach((rowData) => {
+  dataTableContactAngle.forEach((rowData) => {
     const row = document.createElement("tr");
 
     rowData.forEach((cellData) => {
@@ -640,36 +477,6 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-// const ctx2 = document.getElementById("myChart2");
-
 const TESTER = document.getElementById("tester");
 
-// graficoDeDispersión(
-//   TESTER,
-//   alphaX,
-//   alphaY,
-//   betaX,
-//   betaY,
-//   gammaX,
-//   gammaY,
-//   lambdaX,
-//   lambdaY,
-//   epsilonX,
-//   epsilonY
-// );
 const TESTER2 = document.getElementById("tester2");
-
-// graficoDeUnaVariable(TESTER2, derivadaX34, derivadaYTimeArray);
-// graficoDeDispersión(
-//   TESTER2,
-//   alphaX,
-//   alphaY,
-//   betaX,
-//   betaY,
-//   gammaX,
-//   gammaY,
-//   lambdaX,
-//   lambdaY,
-//   epsilonX,
-//   epsilonY
-// );

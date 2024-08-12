@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>tracking.js - color with video</title>
+    <link rel="stylesheet" href="running-tracker.css" />
+    <script src="../build/tracking-min.js"></script>
+    <script src="assets/stats.min.js"></script>
+  </head>
+  <body>
+    <nav class="navbar">
+      <div class="menu">
+        <a href="/index.html">Home</a>
+        <a href="/running_tracker.html">Upload Running video</a>
+        <a href="/running_analysis.html">Running Analysis</a>
+      </div>
+    </nav>
+
+    <div class="container">
+      <header><h1 id="tracking-title">Running</h1></header>
+      <div id="controls">
+        <input type="file" id="fileInput" accept="video/*" />
+        <button id="loadButton"></button>
+        <button id="init_buton">analizar</button>
+        <button id="stopButton">detener</button>
+      </div>
+      <div class="video-container">
+        <video id="videoPlayer" preload autoplay muted controls>
+          <source id="videoSource" type="video/mp4" />
+        </video>
+        <canvas id="canvas" width="480" height="850"></canvas>
+      </div>
+    </div>
+    <footer>
+      <p>Copyright 2024 - kinTrack</p>
+      <a href="mailto:kinappbiomechanics@gmail.com">send email</a>
+      <a href="tel:+5491158060332">phone</a>
+      <a href="https://wa.me/5491158060332">whatsapp</a>
+    </footer>
+    <script src="./runningTracker.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- <meta charset="UTF-8" /> -->
+    <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0" /> -->
+    <link rel="stylesheet" href="running_analysis.css" />
+    <!-- <title>Document</title> -->
+    <script
+      src="https://cdn.plot.ly/plotly-2.32.0.min.js"
+      charset="utf-8"
+    ></script>
+  </head>
+
+  <body>
+    <nav class="menu">
+      <a href="/index.html">Home</a>
+      <a href="/running_tracker.html">Upload video</a>
+      <a href="/running_analysis.html">Analysis</a>
+      <!-- <a href="#">Servicios</a>
+        <a href="#">Contacto</a> -->
+    </nav>
+
+    <header>
+      <h1>kinTrack</h1>
+      <h4>
+        kinTrack es un sistema de análisis biomecánico por rastreo de
+        trayectoria de segmentos corporales.
+      </h4>
+    </header>
+    <main>
+      <section>
+        <h3>Datos de captura del video</h3>
+
+        <ul>
+          <li class="li-datos">
+            Ancho del video: <span id="video-width"></span> px
+          </li>
+          <li class="li-datos">
+            Alto del video: <span id="video-height"></span> px
+          </li>
+          <li class="li-datos">
+            Cuadros por segundo: <span id="frames"></span> fps
+          </li>
+          <li class="li-datos">
+            Duración del video:<span id="span-duration"></span> s
+          </li>
+          <li class="li-datos">
+            Duración de la actividad: <span id="time"></span> s
+          </li>
+          <li class="li-datos">
+            Intervalo de tiempo: <span id="interval"></span> s
+          </li>
+          <li class="li-datos">
+            Vista del video: <span id="vista-video"></span>
+          </li>
+          <li class="li-datos">
+            Contacto inicial: <span id="initial-contact"></span>
+          </li>
+        </ul>
+        <div class="table-container">
+          <table id="contact">
+            <thead>
+              <tr>
+                <th>Ciclo</th>
+                <th>Contacto inicial</th>
+                <th>Tiempo de contacto</th>
+                <th>Toeoff</th>
+                <th>Ángulo del pie</th>
+                <th>Ángulo CI</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Filas dinámicas serán insertadas aquí -->
+            </tbody>
+          </table>
+        </div>
+        <article>
+          <h3>Ángulos articulares</h3>
+
+          <canvas id="angulos"></canvas>
+        </article>
+        <article>
+          <h3>Trayectoria de los marcadores</h3>
+
+          <div>
+            <div
+              id="gota"
+              style="width: 600px; height: 250px; margin-bottom: 600px"
+            ></div>
+          </div>
+        </article>
+        <article>
+          <h3>Análisis de la trayectoria</h3>
+
+          <h4>
+            La media de la trayectoria en y es de: <span id="mean"></span>
+          </h4>
+
+          <div class="table-container">
+            <table id="dynamicTable">
+              <thead>
+                <tr>
+                  <th>Index</th>
+                  <th>índice</th>
+                  <th>tiempo</th>
+                  <th>posición en y</th>
+                  <th>posición en x</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Filas dinámicas serán insertadas aquí -->
+              </tbody>
+            </table>
+          </div>
+          <h3>Trayectoria del quinto metatarsiano</h3>
+          <canvas id="mean-chart"></canvas>
+        </article>
+        <article>
+          <h3>Intervalo entre un index Impar-indexpar</h3>
+
+          <canvas id="posiciones"></canvas>
+        </article>
+        <article>
+          <h3>
+            Derivadas en x y y de epsilon para toeoff y contacto inicial en
+            midfoot
+          </h3>
+
+          <div id="derivada-epsilon"></div>
+        </article>
+
+        <hr />
+        <article id="rearfoot">
+          <h3>Contacto inicial con talón</h3>
+          <h3>Analizamos la derivada del talón</h3>
+          <div id="derivada-lambda"></div>
+        </article>
+        <article id="midfoot">
+          <h3>El contacto es de mediopié</h3>
+          <p>Analizamos la derivada del quinto metatarsiano</p>
+
+          <p>Son las mismas derivadas anteriores analizadas para el toeoff</p>
+        </article>
+        <hr />
+        <!-- fin render contacto de talón -->
+
+        <!-- <div id="cruce-equis"></div> -->
+        <h4>Comportamiento en contacto de antepie y talon</h4>
+
+        <article>
+          <h3>Tiempo de contacto</h3>
+          <p>
+            Para obtener el timepo de contacto realizamos la resta entre
+            contacto inicial y el toeoff
+          </p>
+
+          <p>imprimimos los datos en una tabla:</p>
+        </article>
+
+        <canvas id="posiciones-lambda"></canvas>
+      </section>
+
+      <div>
+        <div
+          id="tester"
+          style="width: 600px; height: 250px; margin-bottom: 600px"
+        ></div>
+      </div>
+      <div>
+        <div id="tester2" style="width: 600px; height: 250px"></div>
+      </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/numbers.js/0.7.0/numbers.min.js"></script>
+    <script src="./runningAnalysis.js" type="module"></script>
+  </body>
+</html>

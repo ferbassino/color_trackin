@@ -1,7 +1,11 @@
 body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            text-align: center;
+            padding: 20px;
+        }
 
 .navbar {
   display: flex;
@@ -46,26 +50,193 @@ body {
         position: absolute;
       }
   
-      .contenedor{
-        position: relative;
-      }
+      
 
-      .right{
-        position: absolute; /* Posiciona este elemento de forma absoluta */
-  top: 165px;
-  left: calc(360px + 10px); 
-  width: 100px; /* Ajusta según tu necesidad */
-  height: 50px; /* Ajusta según tu necesidad */
-  z-index: -1000;
-  
-      }
+      
 
-     
+    
+       /* Estilo de los títulos */
+        h1 {
+            font-size: 2.5rem;
+            margin: 20px 0;
+            color: #333;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        /* Estilo de las imágenes */
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        footer {
+            background-color: #333;
+            color: #fff;
+            padding: 20px;
+            text-align: center;
+            position: relative;
+            margin-top: 40px;
+        }
+
+        footer p {
+            margin-bottom: 10px;
+            font-size: 1rem;
+        }
+
+        footer a {
+            color: #4caf50; /* Verde vibrante para destacar enlaces */
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 1rem;
+            transition: color 0.3s, text-shadow 0.3s;
+        }
+
+        footer a:hover {
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        /* Estilo del título */
+        .container h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Estilo del input y botones */
+        .container input[type="file"] {
+            display: block;
+            margin: 20px auto;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f4f4f4;
+            cursor: pointer;
+        }
+
+        .container button {
+            background-color: #4caf50; /* Verde vibrante */
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+        }
+
+        .container button:hover {
+            background-color: #45a049;
+            transform: scale(1.05);
+        }
+
+        .container button:active {
+            transform: scale(1);
+        }
+
+        /* Estilo del video y canvas */
+        .container video,
+        .container canvas {
+            /* width: 100%;
+            max-width: 100%; */
+            height: auto;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+        }
+
+        .li-datos{
+          margin-top: 5px;
+        }
 @media screen and (max-width: 768px) {
   .navbar {
     display: flex;
     flex-direction: column;
   }
+footer {
+                padding: 15px;
+            }
 
+            footer p {
+                font-size: 0.9rem;
+            }
+
+            footer a {
+                display: block;
+                margin: 5px 0;
+                font-size: 0.9rem;
+            }
+             .container {
+                padding: 15px;
+            }
+
+            .container h1 {
+                font-size: 1.5rem;
+            }
+
+            .container input[type="file"] {
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .container button {
+                width: 100%;
+                padding: 12px;
+                font-size: 0.9rem;
+                margin: 5px 0;
+            }
+
+            .container video,
+            .container canvas {
+                max-width: 100%;
+                height: auto;
+            }
+        }
   
-}
+ @media (max-width: 480px) {
+            footer {
+                padding: 10px;
+            }
+
+            footer p {
+                font-size: 0.8rem;
+            }
+
+            footer a {
+                font-size: 0.8rem;
+            }
+            .container h1 {
+                font-size: 1.2rem;
+            }
+
+            .container button {
+                padding: 10px;
+                font-size: 0.8rem;
+            }
+
+            .container video,
+            .container canvas {
+                max-width: 100%;
+                height: auto;
+                margin-top: 10px;
+            }
+        }
